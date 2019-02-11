@@ -1,7 +1,7 @@
 ---
 title: "preparation of otu data"
 author: "Tobias G Frøslev"
-date: "10/8/2017"
+date: "10/02/2019"
 output: html_document
 editor_options: 
   chunk_output_type: console
