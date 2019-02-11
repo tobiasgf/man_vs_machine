@@ -1,0 +1,24 @@
+Order	OTU	Fruitbody total	Soil frb.	Non-soil frb.
+Agaricales	1480 (54 %)	845 (62 %)	709 (74 %)	136 (34 %)
+Agaricomycetes_pp	2 (0 %)	2 (0 %)	-	2 (0 %)
+Amylocorticiales	1 (0 %)	7 (1 %)	1 (0 %)	6 (1 %)
+Atheliales	58 (2 %)	22 (2 %)	7 (1 %)	15 (4 %)
+Auriculariales	89 (3 %)	27 (2 %)	-	27 (7 %)
+Boletales	57 (2 %)	43 (3 %)	42 (4 %)	1 (0 %)
+Cantharellales	176 (6 %)	39 (3 %)	23 (2 %)	16 (4 %)
+Corticiales	20 (1 %)	6 (0 %)	-	6 (1 %)
+Geastrales	21 (1 %)	2 (0 %)	2 (0 %)	-
+Gloeophyllales	-	1 (0 %)	-	1 (0 %)
+Gomphales	5 (0 %)	9 (1 %)	6 (1 %)	3 (1 %)
+Hymenochaetales	61 (2 %)	54 (4 %)	3 (0 %)	51 (13 %)
+Hysterangiales	3 (0 %)	-	-	-
+Incertae_sedis	-	1 (0 %)	-	1 (0 %)
+Jaapiales	2 (0 %)	2 (0 %)	-	2 (0 %)
+Phallales	3 (0 %)	2 (0 %)	2 (0 %)	-
+Polyporales	88 (3 %)	121 (9 %)	27 (3 %)	94 (23 %)
+Russulales	115 (4 %)	122 (9 %)	86 (9 %)	36 (9 %)
+Sebacinales	232 (8 %)	2 (0 %)	1 (0 %)	1 (0 %)
+Thelephorales	167 (6 %)	26 (2 %)	26 (3 %)	-
+Trechisporales	78 (3 %)	25 (2 %)	18 (2 %)	7 (2 %)
+Tremellodendropsidales	12 (0 %)	1 (0 %)	1 (0 %)	-
+unidentified	71 (3 %)	-	-	-

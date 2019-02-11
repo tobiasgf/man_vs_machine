@@ -1,0 +1,51 @@
+#	Cluster code	No. of seqs	No. of studies (total-BE-AQ)	Taxon name
+1.	UCL7_003532	64	30 - 0 - 0	Fungi; Rozellomycota
+2.	UCL8_000145	8	7 - 0 - 0	Fungi; Rozellomycota
+3.	UCL8_005987	5	5 - 0 - 0	Fungi; Rozellomycota
+4.	UCL7_004812	6	5 - 0 - 0	Fungi; Rozellomycota
+5.	UCL7_006316	6	5 - 0 - 0	Fungi; Rozellomycota
+6.	UCL7_004136	7	5 - 0 - 0	Fungi
+7.	UCL8_001452	10	5 - 0 - 0	Fungi; Rozellomycota
+8.	UCL7_000812	10	5 - 0 - 0	Fungi; Rozellomycota
+9.	UCL8_013064	12	5 - 0 - 0	Fungi; Ascomycota
+10.	UCL8_004822	5	4 - 0 - 0	Fungi; Rozellomycota
+11.	UCL8_008069	9	4 - 0 - 0	Fungi; Ascomycota
+12.	UCL8_007324	5	4 - 0 - 0	Fungi; Rozellomycota
+13.	UCL8_006634	6	4 - 0 - 0	Fungi
+14.	UCL7_003506	4	4 - 0 - 2	Fungi
+15.	UCL7_003368	9	4 - 0 - 1	Fungi; Ascomycota
+16.	UCL8_001916	4	4 - 0 - 0	Fungi; Ascomycota
+17.	UCL7_004723	8	4 - 1 - 0	Fungi; Ascomycota
+18.	UCL8_013600	7	4 - 0 - 0	Fungi; Ascomycota
+19.	UCL7_002583	19	4 - 0 - 1	Fungi; Chytridiomycota
+20.	UCL7_002626	5	4 - 0 - 0	Fungi; Basidiomycota
+21.	UCL8_013711	8	4 - 0 - 0	Fungi; Rozellomycota
+22.	UCL8_012289	3	3 - 0 - 0	Fungi; Rozellomycota
+23.	UCL8_006187	3	3 - 0 - 0	Fungi; Chytridiomycota
+24.	UCL8_008879	11	3 - 0 - 0	Fungi
+25.	UCL7_004820	4	3 - 0 - 0	Fungi; Glomeromycota
+26.	UCL8_002703	4	3 - 0 - 0	Fungi
+27.	UCL7_005211	3	3 - 0 - 0	Fungi; Rozellomycota
+28.	UCL8_006122	11	3 - 0 - 0	Fungi
+29.	UCL8_006845	44	3 - 0 - 0	Fungi; Rozellomycota
+30.	UCL8_008090	25	3 - 0 - 0	Fungi; Ascomycota
+31.	UCL8_003572	7	3 - 0 - 0	Fungi; Chytridiomycota
+32.	UCL8_002505	3	3 - 0 - 0	Fungi; Rozellomycota
+33.	UCL7_000730	4	3 - 0 - 0	Fungi; Ascomycota
+34.	UCL7_002432	3	3 - 0 - 1	Fungi; Rozellomycota
+35.	UCL7_004587	4	3 - 0 - 0	Fungi; Chytridiomycota
+36.	UCL7_005247	7	3 - 0 - 0	Fungi; Chytridiomycota
+37.	UCL7_000363	3	3 - 0 - 0	Fungi; Rozellomycota
+38.	UCL7_003904	5	3 - 0 - 1	Fungi
+39.	UCL8_002042	3	3 - 1 - 0	Fungi
+40.	UCL7_009980	5	3 - 0 - 0	Fungi; Chytridiomycota
+41.	UCL7_003004	4	3 - 0 - 0	Fungi
+42.	UCL7_002863	5	3 - 0 - 0	Fungi; Ascomycota
+43.	UCL7_003426	4	3 - 0 - 0	Fungi; Rozellomycota
+44.	UCL7_010379	4	3 - 0 - 0	Fungi
+45.	UCL7_006602	4	3 - 0 - 0	Fungi
+46.	UCL7_002749	8	3 - 0 - 0	Fungi; Rozellomycota
+47.	UCL7_009013	4	3 - 0 - 0	Fungi; Basidiomycota
+48.	UCL7_004710	3	3 - 0 - 0	Fungi; Ascomycota
+49.	UCL7_004683	43	3 - 0 - 0	Fungi; Rozellomycota
+50.	UCL8_002317	3	3 - 0 - 0	Fungi; Ascomycota

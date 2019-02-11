@@ -1,0 +1,1555 @@
+---
+title: "Man_vs_Machine"
+author: "Tobias G Frøslev"
+date: "10/8/2017"
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+#### set environment ####
+```{r, echo = F, message=FALSE}
+library(here)
+library(tidyr)
+
+#library(plyr)
+library(gridExtra)
+library(RColorBrewer)
+library("taxize")
+library(stringr)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+
+library(dplyr)
+library(ggpmisc)
+library(readxl)
+library(cowplot)
+#install.packages("gclus")
+library(gclus)
+library(data.table)
+library(multcompView)
+#library(plyr)
+library(grid)
+#install.packages("ggpubr")
+library(ggpubr)
+library(lemon)
+```
+
+#### set general variables ####
+```{r,echo=FALSE}
+#tables to use in most analyses
+all_tabs <- c("ds_survey_full.txt","ds_survey_agaricomycetes.txt","ds_survey_agaricales.txt","ds_soilsurvey_full.txt","ds_soilsurvey_agaricomycetes.txt","ds_soilsurvey_agaricales.txt","ds_nonsoilsurvey_full.txt","ds_nonsoilsurvey_agaricomycetes.txt","ds_nonsoilsurvey_agaricales.txt","ds_dna_full.txt","ds_dna_agaricomycetes.txt","ds_dna_agaricales.txt")
+
+read_otu <- here::here("data", all_tabs)
+
+# sample names - vector used for filtering tables
+samples <- c("NV001","NV002","NV003","NV004","NV005","NV006","NV007","NV008","NV009","NT010","NT011","NT012","NT013","NT014","NT015","NT016","NT017","NT018","NH019","NH020","NH021","NH022","NH023","NH024","NH025","NH026","VU027","VU028","VU029","VU030","VU031","VU032","VU033","VU034","VU035","VO036","VO037","VO038","VO039","VO040","VO041","VO042","VO043","VD044","VD045","VD046","VD047","VD048","VD049","VD050","VD051","VD052","EM053","EM054","EM055","EM056","EM057","EM058","EM059","EM060","EM061","ES062","ES063","ES064","ES065","ES066","ES067","ES068","ES069","ES070","EV071","EV072","EV073","EV074","EV075","EV076","EV077","EV078","SN079","SN080","SN081","SN082","SN083","SN084","SN085","SN086","SN087","SV088","SV089","SV090","SV091","SV092","SV093","SV094","SV095","SM096","SM097","SM098","SM099","SM100","SM101","SM102","SM103","SM104","FF105","FF106","FF107","FF108","FF109","FF110","FF111","FF112","FL113","FL114","FL115","FL116","FL117","FL118","FL119","FL120","FM121","FM122","FM123","FM124","FM125","FM126","FM127","FM128","FM129","FM130")
+```
+
+#### figure2 frequency of species and OTUs among the 130 samples ####
+```{r,echo=FALSE}
+comparative_abundance_plot <- function(tab_fs,tab_dn){
+ formula <- y ~ x
+ #Calculating abundance of species and selecting columns
+ tab_fsB <- tab_fs # survey data
+ tab_dnB <- tab_dn # otu data
+ tab_fs$count <- rowSums(tab_fs[,samples]) # no# observations pr species
+ #tab_dn[,samples][tab_dn[,samples] >1] <- 1 # if abundace data was present
+ 
+ #add counter to sp-names
+ sps <- grepl("_sp$",tab_dn$species)
+ sps_count <- sum(sps)
+ tab_dn$species[sps] <- paste0(tab_dn$species[sps],1:sps_count)
+ 
+ indexD <- c(samples,"species")
+ tab_dn1a <- tab_dn[tab_dn$species %in% tab_fs$species,] # make otu table with species also seen as fruitbodies
+ stop1a <- nrow(tab_dn1a) # number of overlapping names (otus)
+ tab_dn1b <- tab_dn[!tab_dn$species %in% tab_fs$species,indexD] # make otu table with species not seen as fruitbodies
+ tab_dn1b$species <- make.unique(as.character(tab_dn1b$species), sep = ".") # add suffix to non unique species names (otus)
+ tab_dn1a2 <- tab_dn1a[,indexD] %>% group_by(species) %>% summarize_all(sum) # collapse otus with identical names (from overlapping pool)
+ tab_dn1 <- rbind(tab_dn1b,tab_dn1a2) # combine otus registered as fruitbodies and otus not. 
+ tab_dn1[,samples][tab_dn1[,samples]>1] <- 1 # reduce to p/a for collapsed otus
+ tab_dn1$count <- rowSums(tab_dn1[,samples]) # add frequancy data for otus
+ 
+ index <- c("species","count")
+ tab_fs2 <- tab_fs[,index]
+ tab_dn2 <- tab_dn1[,index]
+ tab_dn2 <- arrange(tab_dn2,species,-count)
+ 
+ tab_dn2 <-  tab_dn2 %>% group_by(species) %>% summarize_all(sum)
+ 
+ #Combining frb and dna data in one frame
+ tab_dn2$data <- "dna"
+ tab_fs2$data <- "frb"
+ tab_dn2$count <- -tab_dn2$count
+ tab_bothX <- rbind(tab_dn2,tab_fs2)
+ 
+ #Assigning species/OTUs to frb only, dna only or overlap 
+ kkss <- spread(tab_bothX,data,count, fill = 0) %>% mutate(sumX = frb-dna) %>%  mutate(obs = case_when(frb == 0 ~ "dna", dna == 0  ~ "frb", frb > 0 & dna < 0 ~ "both"))
+ kkssI <- filter(kkss,obs == "both")
+ kkssF <- filter(kkss,obs == "frb")
+ kkssD <- filter(kkss,obs == "dna")
+ 
+ dsp <- arrange(kkssI,dna)[10:1,]
+ fsp <- arrange(kkssI,-frb)[1:10,]
+ dsp$obs <- "dna"
+ fsp$obs <- "frb"
+ dsp <- dsp[-which(dsp$species %in% fsp$species),]
+ dfsp <- rbind(fsp,dsp)
+ toptable <- dfsp %>% mutate(id = row_number())
+ 
+ toptable2 <- toptable %>% gather(data,count,frb:dna)
+ 
+ #Variables (no of species/Otus and no of observations in each category) used for plotting
+ stop1 <- nrow(kkssI)
+ stop2 <- nrow(kkssF)
+ stop3 <- nrow(kkssD)
+ nobsIF <- sum(kkssI$frb)
+ nobsID <- abs(sum(kkssI$dna))
+ nobsF <- sum(kkssF$frb)
+ nobsD <- abs(sum(kkssD$dna))
+ 
+ #Ranking species in each subset
+ kkssI <- kkssI %>% arrange(-frb) %>% mutate(id = row_number())
+ kkssF <- kkssF %>% arrange(-sumX) %>% mutate(id = row_number()+nrow(kkssI))
+ kkssD <- kkssD %>% arrange(sumX) %>% mutate(id = row_number()+nrow(kkssI)+nrow(kkssF))
+ 
+ #Combining subset again, and gathering 
+ kkssX <- rbind(kkssI,kkssF,kkssD)
+ kkssY <- kkssX %>% gather(data,count,frb:dna)
+ 
+ tops <- kkssY %>% top_n(10,count) %>% select(species)
+ topd <- kkssY %>% top_n(-10,count) %>% select(species)
+ topt <- c(tops$species,topd$species)
+ kkssL <- kkssY %>% filter(species %in% topt) %>% mutate(id = row_number())
+ 
+ #Vectors with annotation text for plot
+ sprichtext <- c(paste0(as.character(stop1)," sp./\n",as.character(stop1a)," OTU"),paste0(as.character(stop2)," species"),paste0(as.character(stop3)," OTUs"))
+ obstext <- c(paste0(as.character(nobsIF),"\nobs."), paste0(as.character(nobsID),"\nobs."),paste0(as.character(nobsF),"\nobs."),paste0(as.character(nobsD),"\nobs."))
+ frb_text <- c(paste0(as.character(stop1)," sp.\n(",as.character(nobsIF),"obs.)"), paste0(as.character(stop2)," sp.\n(",as.character(nobsF),"obs.)"))
+ otu_text <- c(paste0(as.character(stop1a)," otu\n(",as.character(nobsID),"obs.)"), paste0(as.character(stop3)," otu\n(", as.character(nobsD),"obs.)"))
+ kkssY$data <- factor(kkssY$data, levels = c("dna","frb"))
+ 
+ #Plotting
+ detalied_overlap <- ggplot(kkssY,aes(id,weight=count, fill=data)) + geom_bar() + theme_bw() + xlab("Species/OTUs") + ylab("Frequency (in 130 sites)") + coord_cartesian(ylim = c(-100, 60))+ scale_y_continuous(labels=function(x)abs(x)) + geom_vline(xintercept = c(stop1,stop1+stop2), size = 0.5, linetype = "longdash") + annotate(size=2, "text", x = c(20,stop1+20,stop1+stop2+20), y = 55, label = c("Both\nmeth.","Fruitbody\nonly","OTU\nonly"), hjust=0)  + scale_x_continuous(expand=c(0,0)) + annotate(size=2, "text", x = c(stop1/2,stop1+stop2+stop3/2), y = -90, label = otu_text, hjust = 0.5, vjust= 0) + annotate(size=2, "text", x = c(stop1/2,stop1+stop2/2), y = 30, label = frb_text, hjust = 0.5) + geom_hline(yintercept = 0, size = 0.2) + theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black")) + scale_fill_manual(name="Dataset",breaks = c("frb", "dna"), labels = c("Fruitbody", "OTU"),values=c("gray21","gray51")) + theme(legend.position = c(0.9, 0.85),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+ 
+ toptable2$species <- gsub("_"," ",toptable2$species)
+ top_overlap <- ggplot(toptable2,aes(reorder(species,id),weight=count, fill=data)) + geom_bar() + scale_fill_manual(values=c("gray21","gray51")) + theme_bw() + xlab("") + ylab("Frequency (in 130 sites)") + scale_y_continuous(labels=function(x)abs(x)) + theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),axis.text.x = element_text(angle = 45, hjust = T),legend.position = "none", plot.margin=unit(c(5.5,5.5,5.5,40),"pt"), panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+ 
+ 
+ pairwise_overlap <- ggplot(kkssX, aes(x=-dna , y=frb)) +
+  geom_point(pch=21,size=3, position = "jitter", alpha = 0.2) +
+  xlab("dna") +
+  ylab("fruitbody") +
+  theme_bw() + theme(text = element_text(size=12))
+ 
+ pairwise_overlapI <- ggplot(kkssI, aes(x=-dna , y=frb)) +
+  geom_jitter(pch=21, size=1, alpha = 0.2, width = 0.01, height = 0.01) +
+  xlab("Registered as OTU") +
+  ylab("Registered as fruitbody") + theme_bw() + #scale_x_log10() + scale_y_log10() +
+  geom_smooth(method="lm", se= F, size = 0.5, linetype=1, color = "black") +
+  stat_poly_eq(geom = "label", alpha = 0.5,
+               aes(label = paste(..eq.label..)),
+               formula = formula, label.x.npc = "left", label.y.npc = 0.85,
+               parse = TRUE, size = 2, label.size = NA) + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text=element_text(size=7),axis.text = element_text(colour="black"), panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))+ stat_cor(method = "pearson", size =2)
+ 
+ #Ricness overlap plot
+ tab_dnB[,samples][tab_dnB[,samples] >1] <- 1
+ 
+ interDFB <- intersect(tab_fsB$species,tab_dnB$species) 
+ indexDB <- c("species",samples)
+ tab_dnB <- tab_dnB[tab_dnB$species %in% interDFB,indexDB]
+ tab_fsB <- tab_fsB[tab_fsB$species %in% interDFB,indexDB]
+ 
+ tab_dnB <- tab_dnB[,indexDB] %>% group_by(species) %>% summarize_all(sum)
+ tab_dnB[,samples][tab_dnB[,samples]>1] <- 1
+ 
+ tab_dnB <- tab_dnB[order(tab_dnB$species),samples]
+ tab_fsB <- tab_fsB[order(tab_fsB$species),samples]
+ 
+ dr <- colSums(tab_dnB)
+ fr <- colSums(tab_fsB)
+ 
+ ordfX <- data.frame(dnaX=dr,frbX=fr)
+ overlap_richness <- ggplot(ordfX,aes(dnaX,frbX)) + 
+  geom_point(size=1) + xlab("Fruitbody richness") + ylab("OTU richness") +
+  geom_smooth(method="lm", se= F, size = 0.5, linetype=1, color = "black") +
+  stat_poly_eq(geom = "label", alpha = 0.5,
+               aes(label = paste(..eq.label..)),
+               formula = formula, label.x.npc = "left", label.y.npc = 0.85,
+               parse = TRUE, size = 2, label.size = NA) + 
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + stat_cor(method = "pearson", size =2)
+ 
+ tab_dnBx <- t(tab_dnB)
+ tab_fsBx <- t(tab_fsB)
+ index1 <- which(rowSums(tab_dnBx) < 6)
+ index2 <- which(rowSums(tab_fsBx) < 6)
+ indext <- union(index1,index2)
+ 
+ tab_dnBx <-tab_dnBx[-indext,]
+ tab_fsBx <-tab_fsBx[-indext,]
+ 
+ cd_dn <- vegdist(tab_dnBx, method="bray", binary=TRUE)
+ cd_fs <- vegdist(tab_fsBx, method="bray", binary=TRUE)
+ 
+ mt1 <- mantel(cd_dn, cd_fs, method="pearson", permutations=999) # full data
+ pt1 <- protest(cd_dn, cd_fs)
+ 
+ result <- list(detalied_overlap,pairwise_overlap,top_overlap,pairwise_overlapI,overlap_richness,mt1,pt1,kkssY,kkssX)
+ 
+ return(result)
+}
+
+#Make full plot
+tab_fs <- read.csv(read_otu[1],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tab_dn <- read.csv(read_otu[10],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+plot_full <- comparative_abundance_plot(tab_fs,tab_dn)
+
+composite_plot1 <- ggarrange(plot_full[[1]],
+          ggarrange(plot_full[[3]], plot_full[[4]], plot_full[[5]], ncol = 3, labels = c("b", "c","d"),widths = c(3,2,2)),
+          nrow = 2, labels = "a", heights = c(4,3)
+          )
+
+ggsave(here::here("plots","Fig2_R2.pdf"),composite_plot1,width=19, height=14, units = "cm", limitsize = FALSE)
+
+#Make Agaricomycetes plot
+tab_fs <- read.csv(read_otu[2],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tab_dn <- read.csv(read_otu[11],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+plot_a1 <- comparative_abundance_plot(tab_fs,tab_dn)
+
+#Make Agaricales plot
+tab_fs <- read.csv(read_otu[3],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tab_dn <- read.csv(read_otu[12],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+plot_a2 <- comparative_abundance_plot(tab_fs,tab_dn)
+
+#Combine Agaricomycetes and Agaricales
+composite_plot2 <- ggarrange(ggarrange(plot_a1[[1]],
+          ggarrange(plot_a1[[3]], plot_a1[[4]], plot_a1[[5]], ncol = 3, labels = c("b", "c","d"),widths = c(3,2,2)),
+          nrow = 2, labels = "a", heights = c(4,3)
+          ),
+          ggarrange(plot_a2[[1]],
+          ggarrange(plot_a2[[3]], plot_a2[[4]], plot_a2[[5]], ncol = 3, labels = c("f", "g","h"),widths = c(3,2,2)),
+          nrow = 2, labels = "e", heights = c(4,3)
+          ),nrow = 2)
+
+ggsave(here::here("plots","S_Fig1_R2.pdf"),composite_plot2,width=19, height=28, units = "cm", limitsize = FALSE)
+
+```
+
+
+#### species accumulation calculations ####
+```{r,eval=F, echo=F}
+#Specaccum takes som time. Data is saved and this block not recalculated.
+
+#Calculating richness for the different tables, species accumumation
+specaccl <- vector()
+specaccs <- vector()
+specacc <- list()
+tabS <- list()
+for(i in 1:length(read_otu)){
+ tabS[[i]] <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE) #read table
+ specacc[[i]] <- specaccum(t(tabS[[i]][,samples]))
+ specaccl <- c(specaccl,specacc[[i]]$richness)
+ specaccs <- c(specaccs,specacc[[i]]$sites)
+ }
+
+dataset <- rep(c("fruitbodies total","soil fruitbodies","non soil-fruitbodies","dna"),each=390)
+subset <- rep(c("full data","agaricomycetes","agaricales","full data","agaricomycetes","agaricales","full data","agaricomycetes","agaricales","full data","agaricomycetes","agaricales"),each=130)
+dfR <- data.frame(dataset,subset,specaccs,specaccl)
+dfR$subset <- factor(dfR$subset, levels = c("full data","agaricomycetes","agaricales"))
+
+saveRDS(dfR,here::here("data","specaccumdata.RDS"))
+```
+
+#### part of fig3 species accumulation ####
+```{r,echo=FALSE}
+#reading the saved species accumulation data.
+dfR <- readRDS(here::here("data","specaccumdata.RDS"))
+
+dfR$subset <- plyr::revalue(dfR$subset, c("full data"="Full data", "agaricomycetes"="Agaricomycetes", "agaricales"="Agaricales"))
+
+#old color version
+#p_specaccum <- ggplot(dfR,aes(specaccs,specaccl,color=dataset)) + geom_line() + xlab("Sites") + ylab("Accumulated species/OTU richness") + theme(axis.text = element_text(colour="black")) +facet_grid(.~subset) + scale_colour_discrete(name="Dataset",breaks = c("fruitbodies total", "soil fruitbodies","non soil-fruitbodies","dna"), labels = c("Fruitbody", "Fruitbody (soil)", "Fruitbody (non soil)", "OTU")) + theme_bw() +
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"))
+
+p_specaccum <- ggplot(dfR,aes(specaccs,specaccl, linetype = dataset)) + geom_line() + xlab("Sites") + ylab("Accumulated species/OTU richness") + theme(axis.text = element_text(colour="black")) +facet_grid(.~subset) + scale_linetype_discrete(name="Dataset",breaks = c("fruitbodies total", "soil fruitbodies","non soil-fruitbodies","dna"), labels = c("Fruitbody", "Fruitbody (soil)", "Fruitbody (non soil)", "OTU")) + theme_bw() +
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black")) + theme(legend.position = c(0.7,0.65),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25),strip.background = element_rect(colour="white", fill="white"))
+
+```
+
+#### richness calculations ####
+```{r,eval=F, echo=F}
+#data from this block is saved
+#Calculating richness for the different tables
+richness_results <- data.frame(matrix(NA, nrow = 130, ncol = length(read_otu)))
+namesX <- paste0("richness_",all_tabs)
+for(i in 1:length(read_otu)){
+   tab <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+   tab <- tab[,samples]
+   tab[tab>1] <- 1
+   richness_results[,i] <- colSums(tab)
+   names(richness_results)[i] <- namesX[i]
+}
+saveRDS(richness_results,here::here("data","richness_results.RDS")) # save results
+```
+
+#### fig3 combine species accumulation and richness deviations ####
+```{r,echo=FALSE}
+richness_results <- readRDS(here::here("data","richness_results.RDS"))
+
+CV_values <- apply(richness_results, 2, sd)/apply(richness_results, 2, mean)
+focus <- rep(c("Fruitbody","Fruitbody (soil)","Fruitbody (non-soil)","DNA"),each=3)
+datasetX <- rep(c("All taxa","Agaricomycetes","Agaricales"),times=4) 
+dfCV <- data.frame(CV=CV_values,focus=focus,dataset=datasetX)
+dfCV$focus <- factor(dfCV$focus,levels = c("DNA","Fruitbody","Fruitbody (non-soil)","Fruitbody (soil)"))
+dfCV$dataset <- factor(dfCV$dataset,levels = c("All taxa","Agaricomycetes","Agaricales"))
+
+#old color version
+#Richness_variation <- ggplot(dfCV,aes(dataset,CV,group=focus)) + geom_point(aes(col=focus),pch=21, size=2) + ylab("Richness - relative standard deviation") + xlab("") + theme_bw() + theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),axis.text.x = element_text(angle = 45, hjust = T)) + scale_colour_discrete(name="Dataset",breaks = c("DNA","Fruitbody", "Fruitbody (soil)","Fruitbody (non-soil)"), labels = c("OTU","Fruitbody", "Fruitbody (soil)", "Fruitbody (non soil)"))
+
+#Revision version
+Richness_variation <- ggplot(dfCV,aes(dataset,CV,group=focus)) + geom_point(aes(shape=focus), size=2) + ylab("Richness - relative standard deviation") + xlab("") + theme_bw() + theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),axis.text.x = element_text(angle = 45, hjust = T), panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + scale_shape_discrete(name="Dataset",breaks = c("DNA","Fruitbody", "Fruitbody (soil)","Fruitbody (non-soil)"), labels = c("OTU","Fruitbody", "Fruitbody (soil)", "Fruitbody (non soil)"))
+
+Composite_plotRR <- plot_grid(p_specaccum,Richness_variation,
+                            nrow = 1, ncol=2, rel_widths = c(5,4),
+                            labels = c("a","b"))
+
+ggsave(here::here("plots","Fig3_R2.pdf"), Composite_plotRR, width=19, height=8,units = "cm")
+
+
+#Getting min and max of richness
+colMax <- function(data) sapply(data, max, na.rm = TRUE)
+colMin <- function(data) sapply(data, min, na.rm = TRUE)
+colMax(richness_results)
+colMin(richness_results)
+
+# colMax(richness_results)
+#                 richness_ds_survey_full.txt        richness_ds_survey_agaricomycetes.txt            richness_ds_survey_agaricales.txt              richness_ds_soilsurvey_full.txt 
+#                                         179                                          149                                           82                                          102 
+#   richness_ds_soilsurvey_agaricomycetes.txt        richness_ds_soilsurvey_agaricales.txt           richness_ds_nonsoilsurvey_full.txt richness_ds_nonsoilsurvey_agaricomycetes.txt 
+#                                          98                                           76                                           87                                           63 
+#    richness_ds_nonsoilsurvey_agaricales.txt                     richness_ds_dna_full.txt           richness_ds_dna_agaricomycetes.txt               richness_ds_dna_agaricales.txt 
+#                                          24                                          636                                          148                                          110 
+# colMin(richness_results)
+#                 richness_ds_survey_full.txt        richness_ds_survey_agaricomycetes.txt            richness_ds_survey_agaricales.txt              richness_ds_soilsurvey_full.txt 
+#                                           0                                            0                                            0                                            0 
+#   richness_ds_soilsurvey_agaricomycetes.txt        richness_ds_soilsurvey_agaricales.txt           richness_ds_nonsoilsurvey_full.txt richness_ds_nonsoilsurvey_agaricomycetes.txt 
+#                                           0                                            0                                            0                                            0 
+#    richness_ds_nonsoilsurvey_agaricales.txt                     richness_ds_dna_full.txt           richness_ds_dna_agaricomycetes.txt               richness_ds_dna_agaricales.txt 
+#                                           0                                           81                                           10                                            3 
+
+mean(richness_results$richness_ds_dna_full.txt) # 286.8385 otus pr site
+forest_plots <- c(FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE)
+mean(richness_results$richness_ds_survey_full.txt[forest_plots]) # fuitbody richness in forest plots
+```
+
+
+#### fig4 - pairwise comparison of site species/OTU-richness ####
+```{r,echo=FALSE}
+richness_results <- readRDS(here::here("data","richness_results.RDS"))
+DNAref <- c(richness_results[,10],richness_results[,11],richness_results[,12],richness_results[,10],richness_results[,11],richness_results[,12],richness_results[,10],richness_results[,11],richness_results[,12])
+surveyref <- c(richness_results[,1],richness_results[,2],richness_results[,3],richness_results[,4],richness_results[,5],richness_results[,6],richness_results[,7],richness_results[,8],richness_results[,9])
+focus <- rep(c("Fruitbody (full)","Fruitbody (soil)","Fruitbody (non-soil)"),each=390)
+datasetX <- rep(rep(c("All taxa","Agaricomycetes","Agaricales"),each=130),times=3) 
+
+ricDF <- data.frame(DNArich=DNAref,Surveyrich=surveyref,focus=focus,dataset=datasetX)
+ricDF$focus <- factor(ricDF$focus,levels = c("Fruitbody (full)","Fruitbody (soil)","Fruitbody (non-soil)"))
+ricDF$dataset <- factor(ricDF$dataset,levels = c("All taxa","Agaricomycetes","Agaricales"))
+
+#Restricting to soil fungi
+ricDF <- ricDF %>% filter(focus == "Fruitbody (soil)")
+
+formula <- y ~ x
+
+figure_richness <- ggplot(ricDF, aes(x=Surveyrich , y=DNArich)) +
+  geom_point(pch=21,size=1) + geom_abline(linetype=2, size=0.2)+ facet_rep_grid(.~dataset) +
+  geom_smooth(method="lm", se= F, size = 1, linetype=1, color="black") +
+  stat_poly_eq(geom = "label", alpha = 0.5,
+               aes(label = paste(..eq.label..)),
+               formula = formula, label.x.npc = "right", label.y.npc = 0.85,
+               parse = TRUE, size = 2, label.size = NA) +
+  scale_color_brewer(palette = "Set1") + stat_cor(method = "pearson", size =2, label.x.npc = "right") +
+  xlab("Species richness") +
+  ylab("OTU richness") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_bw() + theme(panel.grid.minor = element_blank(),
+                     panel.grid.major = element_blank(),
+                     text=element_text(size=7),
+                     axis.text = element_text(colour="black"),
+                     legend.position = c(0.7,0.65),
+                     panel.border = element_blank(),
+                     axis.line = element_line(colour = 'black', size = 0.25),
+                     strip.background = element_rect(colour="white", fill="white")) + scale_y_continuous(limits = c(0,500))
+
+
+ggsave(here::here("plots","Fig4_R2.pdf"), figure_richness, width=19, height=10, units = "cm")
+
+```
+
+#### fig_suppl - otu richness correlation across groups ####
+```{r,echo=FALSE}
+richness_results <- readRDS(here::here("data","richness_results.RDS"))
+DNAref <- c(richness_results[,10],richness_results[,10])
+surveyref <- c(richness_results[,11],richness_results[,12])
+datasetX <- rep(c("Agaricomycetes","Agaricales"),each=130) 
+
+ricDF <- data.frame(DNArich=DNAref,Surveyrich=surveyref,dataset=datasetX)
+ricDF$dataset <- factor(ricDF$dataset,levels = c("Agaricomycetes","Agaricales"))
+
+formula <- y ~ x
+
+figure_richness <- ggplot(ricDF, aes(x=Surveyrich , y=DNArich)) +
+  geom_point(pch=21,size=1) + facet_rep_grid(.~dataset) + 
+  geom_smooth(method="lm", se= F, size = 1, linetype=1, color="black") +
+  stat_poly_eq(geom = "label", alpha = 0.5,
+               aes(label = paste(..eq.label..)),
+               formula = formula, label.x.npc = "left", label.y.npc = 0.85,
+               parse = TRUE, size = 2, label.size = NA) +
+  scale_color_brewer(palette = "Set1") + stat_cor(method = "pearson", size =2) +
+  xlab("OTU richness (restricted data)") +
+  ylab("OTU richness (full data)") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_bw() + theme(panel.grid.minor = element_blank(),
+                     panel.grid.major = element_blank(),
+                     text=element_text(size=7),
+                     axis.text = element_text(colour="black"),
+                     legend.position = c(0.7,0.65),
+                     panel.border = element_blank(),
+                     axis.line = element_line(colour = 'black', size = 0.25),
+                     strip.background = element_rect(colour="white", fill="white"))# + scale_y_continuous(limits = c(0,500))
+
+ggsave(here::here("plots","S_Fig3_R2.pdf"), figure_richness, width=19, height=10, units = "cm")
+
+```
+
+
+#### prepare taxonomic composition ####
+```{r,eval=F, echo=F}
+#data is saved
+all_tab_names <- c("Survey1","Survey2","Survey3","Soilsurvey1","Soilsurvey2","Soilsurvey3","Nonsoilsurvey1","Nonsoilsurvey2","Nonsoilsurvey3","DNA1","DNA2","DNA3")
+all_labels <- c("Survey","Survey","Survey","Soil","Soil","Soil","Nonsoil","Nonsoil","Nonsoil","DNA","DNA","DNA")
+
+#Extracting taxa from the different tables.
+tabT <- list()
+for(i in 1:length(read_otu)){
+ tab <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE) #read table
+ indexT <- which(names(tab) %in% samples)
+ tabT[[i]] <- tab[,-(which(names(tab) %in% samples))]
+ tabT[[i]]$subset <- all_tab_names[i]
+ tabT[[i]]$labels <- all_labels[i]
+ indexY <- c("species","genus","kingdom","phylum","class","order","family","subset","labels")
+ tabT[[i]] <- tabT[[i]][,indexY]
+}
+
+dfT <- rbind(tabT[[1]],tabT[[2]],tabT[[3]],tabT[[4]],tabT[[5]],tabT[[6]],tabT[[7]],tabT[[8]],tabT[[9]],tabT[[10]],tabT[[11]],tabT[[12]])
+
+saveRDS(dfT,here::here("data","taxonomic_data_for_plots.RDS"))
+```
+
+
+#### ####
+```{r,echo=FALSE}
+dfT <- readRDS(here::here("data","taxonomic_data_for_plots.RDS"))
+
+dna_species <- dfT %>% filter(subset == "DNA1") %>% group_by(species) %>% select(species)
+dnasp <- dna_species$species
+soil_species <- dfT %>% filter(subset == "Soilsurvey1") %>% group_by(species) %>% select(species)
+soilsp <- soil_species$species
+nonsoil_species <- dfT %>% filter(subset == "Nonsoilsurvey1") %>% group_by(species) %>% select(species)
+nonsoilsp <- nonsoil_species$species
+frb_species <- dfT %>% filter(subset == "Survey1") %>% group_by(species) %>% select(species)
+frbsp <- frb_species$species
+length(frbsp)
+length(soilsp)
+length(nonsoilsp)
+
+length(intersect(dnasp,soilsp))/length(soilsp)
+length(intersect(dnasp,nonsoilsp))/length(nonsoilsp)
+
+#> length(frbsp)
+#[1] 1751
+#> length(soilsp)
+#[1] 1067
+#> length(nonsoilsp)
+#[1] 684
+#> length(intersect(dnasp,soilsp))/length(soilsp)
+#[1] 0.4151828
+#> length(intersect(dnasp,nonsoilsp))/length(nonsoilsp)
+#[1] 0.1520468
+
+```
+
+
+#### fig5 - taxonomic composition ####
+```{r,echo=FALSE}
+dfT <- readRDS(here::here("data","taxonomic_data_for_plots.RDS"))
+dfT$subset <- factor(dfT$subset,levels = c("DNA1","DNA2","DNA3","Survey1","Survey2","Survey3","Soilsurvey1","Soilsurvey2","Soilsurvey3","Nonsoilsurvey1","Nonsoilsurvey2","Nonsoilsurvey3"))
+dfT$labels <- factor(dfT$labels,levels = c("DNA","Survey","Soil","Nonsoil"))
+dfT$labels <- plyr::revalue(dfT$labels, c("DNA"="OTU", "Survey"="Fruitbody", "Soil"="Frb.\nsoil", "Nonsoil"="Frb.\nnon-soil"))
+
+dfT <- dfT %>% filter(labels != "Fruitbody")
+
+custom_col42=c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788")
+
+#PLOTS on full data - class level
+dfT1 <- filter(dfT,subset == "Survey1"|subset == "Soilsurvey1"|subset == "Nonsoilsurvey1"|subset == "DNA1")
+taxaSS <- names(sort(table(dfT1$class[dfT1$subset == "Soilsurvey1"]), decreasing = T))[1:10]
+taxaNS <- names(sort(table(dfT1$class[dfT1$subset == "Nonsoilsurvey1"]), decreasing = T))[1:10]
+taxaD <- names(sort(table(dfT1$class[dfT1$subset == "DNA1"]), decreasing = T))[1:10]
+taxaT <- union_all(taxaD,taxaSS,taxaNS)
+dfT2 <- dfT1
+dfT2$class[!dfT2$class %in% taxaT & !dfT2$class == "unidentified"] <- "Other"
+
+dfT2$class <- gsub("cls_Incertae_sedis","_pp",dfT2$class)
+#dfT2 <- dfT2[!is.na(dfT2$class),]
+
+p_tax1 <- ggplot(dfT2, aes(labels,fill=class)) + geom_bar() + scale_fill_manual(values=custom_col42) + theme_bw()+ theme(axis.text = element_text(colour="black")) + xlab("") + ylab("") + ylab("Number of species/OTUs")
+p_tax2 <- ggplot(dfT2, aes(labels,fill=class)) + geom_bar(position="fill") + scale_fill_manual(values=custom_col42) + theme_bw()+ theme(axis.text = element_text(colour="black")) + xlab("") + ylab("Proportion of species/OTUs")
+
+
+#PLOTS on Agaricomycetes data - Order level
+dfT1 <- filter(dfT,subset == "Survey2"|subset == "Soilsurvey2"|subset == "Nonsoilsurvey2"|subset == "DNA2")
+taxaSS <- names(sort(table(dfT1$order[dfT1$subset == "Soilsurvey2"]), decreasing = T))[1:11]
+taxaNS <- names(sort(table(dfT1$order[dfT1$subset == "Nonsoilsurvey2"]), decreasing = T))[1:10]
+taxaD <- names(sort(table(dfT1$order[dfT1$subset == "DNA2"]), decreasing = T))[1:11]
+taxaT <- union_all(taxaD,taxaSS,taxaNS)
+dfT2 <- dfT1
+dfT2$order[!dfT2$order %in% taxaT & !dfT2$order == "unidentified"] <- "Other"
+
+dfT2$order <- gsub("ord_Incertae_sedis","_pp",dfT2$order)
+
+p_tax3 <- ggplot(dfT2, aes(labels,fill=order)) + geom_bar() + scale_fill_manual(values=custom_col42) + theme_bw()+ theme(axis.text = element_text(colour="black")) + xlab("") + ylab("") + ylab("Number of species/OTUs")
+p_tax4 <- ggplot(dfT2, aes(labels,fill=order)) + geom_bar(position="fill") + scale_fill_manual(values=custom_col42) + theme_bw()+ theme(axis.text = element_text(colour="black")) + xlab("") + ylab("") + ylab("Proportion of species/OTUs")
+
+#PLOTS on Agaricales data - Genus level
+dfT1 <- filter(dfT,subset == "Survey3"|subset == "Soilsurvey3"|subset == "Nonsoilsurvey3"|subset == "DNA3")
+#taxaS <- names(sort(table(dfT1$genus[dfT1$subset == "Survey3"]), decreasing = T))[1:8]
+taxaSS <- names(sort(table(dfT1$genus[dfT1$subset == "Soilsurvey3"]), decreasing = T))[1:7]
+taxaNS <- names(sort(table(dfT1$genus[dfT1$subset == "Nonsoilsurvey3"]), decreasing = T))[1:7]
+taxaD <- names(sort(table(dfT1$genus[dfT1$subset == "DNA3"]), decreasing = T))[1:7]
+taxaT <- union_all(taxaD,taxaSS,taxaNS)
+dfT2 <- dfT1
+dfT2$genus[!dfT2$genus %in% taxaT & !dfT2$genus == "unidentified"] <- "Other"
+
+p_tax5 <- ggplot(dfT2, aes(labels,fill=genus)) + geom_bar() + scale_fill_manual(values=custom_col42) + theme_bw()+ theme(axis.text = element_text(colour="black")) + xlab("Agaricales") + xlab("") + ylab("") + ylab("Number of species/OTUs")
+
+#dfT2 <- dfT2[!dfT2$genus == "unidentified",]
+
+p_tax6 <- ggplot(dfT2, aes(labels,fill=genus)) + geom_bar(position="fill") + scale_fill_manual(values=custom_col42) + theme_bw()+ theme(axis.text = element_text(colour="black")) + xlab("") + ylab("") + ylab("Proportion of species/OTUs")
+
+g_legend<-function(a.gplot){
+    tmp <- ggplot_gtable(ggplot_build(a.gplot))
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+    legend <- tmp$grobs[[leg]]
+    legend
+}
+
+p1 <- p_tax1 + theme(legend.position = "none", axis.text = element_text(size = 12,colour="black"), panel.grid.minor = element_blank(),panel.grid.major = element_blank(),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+p2 <- p_tax2 + theme(legend.position = "none", axis.text = element_text(size = 12,colour="black"), panel.grid.minor = element_blank(),panel.grid.major = element_blank(),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+p3 <- p_tax3 + theme(legend.position = "none", axis.text = element_text(size = 12,colour="black"), panel.grid.minor = element_blank(),panel.grid.major = element_blank(),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+p4 <- p_tax4 + theme(legend.position = "none", axis.text = element_text(size = 12,colour="black"), panel.grid.minor = element_blank(),panel.grid.major = element_blank(),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+p5 <- p_tax5 + theme(legend.position = "none", axis.text = element_text(size = 12,colour="black"), panel.grid.minor = element_blank(),panel.grid.major = element_blank(),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+p6 <- p_tax6 + theme(legend.position = "none", axis.text = element_text(size = 12,colour="black"), panel.grid.minor = element_blank(),panel.grid.major = element_blank(),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25))
+
+legend1 <- g_legend(p_tax1+guides(fill=guide_legend(ncol=1, title = "Class")) + theme(legend.text = element_text(size = 12), legend.title=element_text(size=16)))
+legend3 <- g_legend(p_tax3+guides(fill=guide_legend(ncol=1, title = "Order"))+ theme(legend.text = element_text(size = 12), legend.title=element_text(size=16)))
+legend5 <- g_legend(p_tax5+guides(fill=guide_legend(ncol=1, title = "Genus")) + theme(legend.text = element_text(size = 12), legend.title=element_text(size=16)))
+
+#Taxonomic_composition_color <- plot_grid(p1,p2,legend1,p3,p4,legend3,p5,p6,legend5, 
+#                            nrow = 1, ncol=9, rel_widths = c(8,8,12,8,8,12,8,8,12),
+#                            labels = c("a","","","b","","","c","",""))
+
+Taxonomic_composition_color <- plot_grid(p1,p2,legend1,p3,p4,legend3,p5,p6,legend5, 
+                            align = "vh", axis = "lt", nrow = 3, ncol=3, rel_widths = c(8,8,12,8,8,12,8,8,12),
+                            labels = c("a","","","b","","","c","",""), label_size = 16)
+
+
+#Taxonomic_composition_color2 <- Taxonomic_composition_color + theme(legend.text = element_text(size = 8, colour = "red"))
+ggsave(here::here("plots","Fig5_R2.pdf"), Taxonomic_composition_color,width=12, height=16)
+```
+
+#### Sup_tables 1-4 Taxon tables ####
+```{r}
+dfT <- NULL
+dfT <- readRDS(here::here("data","taxonomic_data_for_plots.RDS"))
+dfT$subset <- factor(dfT$subset,levels = c("DNA1","DNA2","DNA3","Survey1","Survey2","Survey3","Soilsurvey1","Soilsurvey2","Soilsurvey3","Nonsoilsurvey1","Nonsoilsurvey2","Nonsoilsurvey3"))
+dfT$labels <- factor(dfT$labels,levels = c("DNA","Survey","Soil","Nonsoil"))
+dfT$labels <- plyr::revalue(dfT$labels, c("DNA"="DNA", "Survey"="Fruitbody", "Soil"="Frb. soil", "Nonsoil"="Frb. non-soil"))
+
+#PLOTS on Full data - class level
+dfT2 <- dfT
+dfT2$class <- gsub("cls_Incertae_sedis","_pp",dfT2$class)
+dfT2$order <- gsub("_ord_Incertae_sedis","_pp",dfT2$order)
+dfT2 <- dfT2[!is.na(dfT2$kingdom),]
+dfT2$phylum <- gsub("Fungi_phy_Incertae_sedis","Incertae_sedis",dfT2$phylum)
+dfT2$phylum <- gsub(",","",dfT2$phylum)
+
+dfTxx <- dfT2 %>% filter(subset == "DNA1" | subset == "Survey1" | subset == "Soilsurvey1" | subset == "Nonsoilsurvey1") %>% select(species,phylum,labels) %>% group_by(labels,phylum) %>% summarise(n = n()) %>% spread(labels,n, fill=0) %>%
+ mutate(DNA_pct = round(DNA / sum(DNA), 2),
+        Fruitbody_pct = round(Fruitbody / sum(Fruitbody),2),
+        soil_pct = round(`Frb. soil`/sum(`Frb. soil`),2),
+        nonsoil_pct = round(`Frb. non-soil`/sum(`Frb. non-soil`),2)) %>%
+ mutate(DNA2 = paste0(as.character(DNA)," (",as.character(DNA_pct*100)," %)"),
+        Fruitbody2 = paste0(as.character(Fruitbody)," (",as.character(Fruitbody_pct*100)," %)"),
+        Soil2 = paste0(as.character(`Frb. soil`)," (",as.character(soil_pct*100)," %)"),
+        Nonsoil2 = paste0(as.character(`Frb. non-soil`)," (",as.character(nonsoil_pct*100)," %)")) %>%
+ select(phylum,DNA2,Fruitbody2,Soil2,Nonsoil2) %>% mutate_if(is.character, 
+                str_replace_all, pattern = "^0 \\(0 %\\)", replacement = "-")
+
+names(dfTxx) <- c("Phylum","OTU", "Fruitbody total", "Soil frb.", "Non-soil frb.")
+write.table(dfTxx,here::here("tables","phylum_table.txt"),sep="\t", quote = F, row.names = F)
+
+dfTxx <- dfT2 %>% filter(subset == "DNA1" | subset == "Survey1" | subset == "Soilsurvey1" | subset == "Nonsoilsurvey1") %>% select(species,class,labels) %>% group_by(labels,class) %>% summarise(n = n()) %>% spread(labels,n, fill=0) %>%
+ mutate(DNA_pct = round(DNA / sum(DNA), 2),
+        Fruitbody_pct = round(Fruitbody / sum(Fruitbody),2),
+        soil_pct = round(`Frb. soil`/sum(`Frb. soil`),2),
+        nonsoil_pct = round(`Frb. non-soil`/sum(`Frb. non-soil`),2)) %>%
+ mutate(DNA2 = paste0(as.character(DNA)," (",as.character(DNA_pct*100)," %)"),
+        Fruitbody2 = paste0(as.character(Fruitbody)," (",as.character(Fruitbody_pct*100)," %)"),
+        Soil2 = paste0(as.character(`Frb. soil`)," (",as.character(soil_pct*100)," %)"),
+        Nonsoil2 = paste0(as.character(`Frb. non-soil`)," (",as.character(nonsoil_pct*100)," %)")) %>%
+ select(class,DNA2,Fruitbody2,Soil2,Nonsoil2) %>% mutate_if(is.character, 
+                str_replace_all, pattern = "^0 \\(0 %\\)", replacement = "-")
+
+names(dfTxx) <- c("Class","OTU", "Fruitbody total", "Soil frb.", "Non-soil frb.")
+write.table(dfTxx,here::here("tables","class_table.txt"),sep="\t", quote = F, row.names = F)
+
+dfTxx <- dfT2 %>% filter(subset == "DNA1" | subset == "Survey1" | subset == "Soilsurvey1" | subset == "Nonsoilsurvey1") %>% filter(class == "Agaricomycetes") %>% select(species,order,labels) %>% group_by(labels,order) %>% summarise(n = n()) %>% spread(labels,n, fill=0) %>%
+ mutate(DNA_pct = round(DNA / sum(DNA), 2),
+        Fruitbody_pct = round(Fruitbody / sum(Fruitbody),2),
+        soil_pct = round(`Frb. soil`/sum(`Frb. soil`),2),
+        nonsoil_pct = round(`Frb. non-soil`/sum(`Frb. non-soil`),2)) %>%
+ mutate(DNA2 = paste0(as.character(DNA)," (",as.character(DNA_pct*100)," %)"),
+        Fruitbody2 = paste0(as.character(Fruitbody)," (",as.character(Fruitbody_pct*100)," %)"),
+        Soil2 = paste0(as.character(`Frb. soil`)," (",as.character(soil_pct*100)," %)"),
+        Nonsoil2 = paste0(as.character(`Frb. non-soil`)," (",as.character(nonsoil_pct*100)," %)")) %>%
+ select(order,DNA2,Fruitbody2,Soil2,Nonsoil2) %>% mutate_if(is.character, 
+                str_replace_all, pattern = "^0 \\(0 %\\)", replacement = "-")
+
+names(dfTxx) <- c("Order","OTU", "Fruitbody total", "Soil frb.", "Non-soil frb.")
+write.table(dfTxx,here::here("tables","order_table.txt"),sep="\t", quote = F, row.names = F)
+
+dfTxx <- dfT2 %>% filter(subset == "DNA1" | subset == "Survey1" | subset == "Soilsurvey1" | subset == "Nonsoilsurvey1") %>% filter(order == "Agaricales") %>% select(species,genus,labels) %>% group_by(labels,genus) %>% summarise(n = n()) %>% spread(labels,n, fill=0) %>%
+ mutate(DNA_pct = round(DNA / sum(DNA), 2),
+        Fruitbody_pct = round(Fruitbody / sum(Fruitbody),2),
+        soil_pct = round(`Frb. soil`/sum(`Frb. soil`),2),
+        nonsoil_pct = round(`Frb. non-soil`/sum(`Frb. non-soil`),2)) %>%
+ mutate(DNA2 = paste0(as.character(DNA)," (",as.character(DNA_pct*100)," %)"),
+        Fruitbody2 = paste0(as.character(Fruitbody)," (",as.character(Fruitbody_pct*100)," %)"),
+        Soil2 = paste0(as.character(`Frb. soil`)," (",as.character(soil_pct*100)," %)"),
+        Nonsoil2 = paste0(as.character(`Frb. non-soil`)," (",as.character(nonsoil_pct*100)," %)")) %>%
+ select(genus,DNA2,Fruitbody2,Soil2,Nonsoil2) %>% mutate_if(is.character, 
+                str_replace_all, pattern = "^0 \\(0 %\\)", replacement = "-")
+
+names(dfTxx) <- c("Genus","OTU", "Fruitbody total", "Soil frb.", "Non-soil frb.")
+write.table(dfTxx,here::here("tables","genus_table.txt"),sep="\t", quote = F, row.names = F)
+
+```
+
+#### figsupple taxonomic composition panels ####
+```{r,echo=FALSE}
+
+dfT <- readRDS(here::here("data","taxonomic_data_for_plots.RDS"))
+dfT <- filter(dfT,subset == "DNA1" | subset == "Survey1")
+dfT$subset <- plyr::revalue(dfT$subset, c("DNA1"="OTU", "Survey1"="Fruitbody"))
+dfT$class <- gsub(",","",dfT$class)
+dfT$phylum <- gsub(",","",dfT$phylum)
+dfT <- dfT[!dfT$phylum == "Amoebozoa",]
+
+resultR <- dfT %>% filter(phylum != "unidentified") %>% 
+ group_by(subset,phylum) %>% 
+ summarize(sum_var1 = n()) %>%
+ group_by(subset) %>%
+ mutate(percent = sum_var1/sum(sum_var1)) %>%
+ arrange(subset) %>%
+ select(subset, phylum, sum_var1) %>%
+ filter(subset == "OTU" | subset == "Fruitbody") %>%
+ spread(subset, sum_var1, fill = 0, convert = FALSE, drop = TRUE, sep = NULL) %>%
+ filter(OTU > 0 | Fruitbody > 0) %>% arrange(-(Fruitbody+OTU))
+
+resultR$phylum <- gsub("Fungi_phy_Incertae_sedis","Incertae_sedis",resultR$phylum)
+resultR$phylum <- factor(resultR$phylum, levels=resultR$phylum) 
+
+ppplot0 <- resultR %>% gather(dataset,measurement, OTU:Fruitbody) %>% ggplot(aes(phylum, weight=measurement+1, fill=factor(dataset,levels = c("OTU","Fruitbody")))) + geom_bar(position="dodge",col="black", size=0.2) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("") + ylab("Species/OTUs") + scale_y_log10() + theme_bw() + theme(axis.text = element_text(colour="black"), axis.text.x = element_text(angle = 45, hjust = T)) + guides(fill=guide_legend(title="Dataset")) + scale_fill_manual(values=c("gray61","gray91")) + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + annotate(size=5, "text", x = -Inf, y = Inf, label = "Fungal phyla",hjust = 0, vjust = 1) + theme(legend.position = c(0.9,0.8))
+####
+
+resultR <- dfT %>% filter(class != "unidentified") %>% 
+ group_by(subset,class) %>% 
+ summarize(sum_var1 = n()) %>%
+ group_by(subset) %>%
+ mutate(percent = sum_var1/sum(sum_var1)) %>%
+ arrange(subset) %>%
+ select(subset, class, sum_var1) %>%
+ filter(subset == "OTU" | subset == "Fruitbody") %>%
+ spread(subset, sum_var1, fill = 0, convert = FALSE, drop = TRUE, sep = NULL) %>%
+ filter(OTU > 0 | Fruitbody > 0) %>% arrange(-(Fruitbody+OTU)) %>% mutate(id = row_number())
+
+
+resultR$class <- gsub("cls_Incertae_sedis","pp",resultR$class)
+resultR$class <- factor(resultR$class, levels = resultR$class)
+
+ppplot1 <- resultR %>% gather(dataset,measurement, OTU:Fruitbody) %>% ggplot(aes(x=class, weight=measurement+1, fill=factor(dataset,levels = c("OTU","Fruitbody")))) + geom_bar(position="dodge",col="black", size=0.2) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("") + ylab("Species/OTUs") + scale_y_log10() + theme_bw() + theme(axis.text = element_text(colour="black"), axis.text.x = element_text(angle = 45, hjust = T)) + guides(fill=guide_legend(title="Dataset"))+ scale_fill_manual(values=c("gray61","gray91"))+ theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + annotate(size=5, "text", x = -Inf, y = Inf, label = "Fungal classes",hjust = 0, vjust = 1) + theme(legend.position = c(0.9,0.8))
+
+
+###
+resultR <- dfT %>% filter(class == "Agaricomycetes" & genus != "unidentified") %>% 
+ group_by(subset,order) %>% 
+ summarize(sum_var1 = n()) %>%
+ group_by(subset) %>%
+ mutate(percent = sum_var1/sum(sum_var1)) %>%
+ arrange(subset) %>%
+ select(subset, order, sum_var1) %>%
+ filter(subset == "OTU" | subset == "Fruitbody") %>%
+ spread(subset, sum_var1, fill = 0, convert = FALSE, drop = TRUE, sep = NULL) %>%
+ filter(OTU > 0 | Fruitbody > 0) %>% arrange(-(Fruitbody+OTU))
+
+resultR$order <- gsub("ord_Incertae_sedis","pp",resultR$order)
+resultR$order <- factor(resultR$order, levels = resultR$order)
+
+ppplot2 <- resultR %>% gather(dataset,measurement, OTU:Fruitbody) %>% ggplot(aes(x=order, weight=measurement+1, fill=factor(dataset,levels = c("OTU","Fruitbody")))) + geom_bar(position="dodge",col="black", size=0.2) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("") + ylab("Species/OTUs") + scale_y_log10() + theme_bw() + theme(axis.text = element_text(colour="black"), axis.text.x = element_text(angle = 45, hjust = T)) + guides(fill=guide_legend(title="Dataset"))+ scale_fill_manual(values=c("gray61","gray91")) + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + annotate(size=5, "text", x = -Inf, y = Inf, label = "Fungal orders (in Agaricomycetes)",hjust = 0, vjust = 1) + theme(legend.position = c(0.9,0.8))
+
+###
+resultR <- dfT %>% filter(order == "Agaricales" & genus != "unidentified") %>% 
+ group_by(subset,genus) %>% 
+ summarize(sum_var1 = n()) %>%
+ group_by(subset) %>%
+ mutate(percent = sum_var1/sum(sum_var1)) %>%
+ arrange(subset) %>%
+ select(subset, genus, sum_var1) %>%
+ filter(subset == "OTU" | subset == "Fruitbody") %>%
+ spread(subset, sum_var1, fill = 0, convert = FALSE, drop = TRUE, sep = NULL) %>%
+ filter(OTU > 4 | Fruitbody > 4) %>% arrange(-(Fruitbody+OTU))
+
+resultR$genus <- factor(resultR$genus, levels = resultR$genus)
+
+ppplot3 <- resultR %>% gather(dataset,measurement, OTU:Fruitbody) %>% ggplot(aes(x=genus, weight=measurement+1, fill=factor(dataset,levels = c("OTU","Fruitbody")))) + geom_bar(position="dodge",col="black", size=0.2) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("") + ylab("Species/OTUs") + scale_y_log10() + theme_bw() + theme(axis.text = element_text(colour="black"), axis.text.x = element_text(angle = 45, hjust = T)) + guides(fill=guide_legend(title="Dataset"))+ scale_fill_manual(values=c("gray61","gray91")) + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),text=element_text(size=7),axis.text = element_text(colour="black"),panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + annotate(size=5, "text", x = -Inf, y = Inf, label = "Fungal genera (in Agaricales)",hjust = 0, vjust = 1) + theme(legend.position = c(0.9,0.8))
+
+Taxonomic_composition_panels <- plot_grid(ppplot0,ppplot1,ppplot2,ppplot3, 
+                            nrow = 4, ncol=1,
+                            labels = c("a","b","c","d"))
+
+ggsave(here::here("plots","S_Fig2_R2.pdf"), Taxonomic_composition_panels, width=12, height=19)
+
+```
+
+
+#### Update dk redlist names to current use ####
+```{r,eval=F, echo=F}
+
+source(here::here("R","translate_taxonomy.R"))
+#loading danish redlist names (agaricomycotina)
+redlist <- read.table(here::here("data","dk_redlist.csv"),sep=',',header=T,as.is=TRUE,row.names = 1)
+redlist$FullName <- gsub("Flammulaster limulatus var\\. limulatus","Flammulaster limulatus",redlist$FullName)
+redlist$FullName <- gsub("Pluteus umbrosus var\\. umbrosus ","Pluteus umbrosus",redlist$FullName)
+redlist$FullName <- gsub(" ","_",redlist$FullName)
+redlist <- redlist[redlist$RedlistCategory %in% c("NT","VU","EN","CR","RE"),]
+redlist_species <- redlist$FullName
+
+redlist_species_old <- gsub("_"," ",redlist_species)
+dk_redlist_updated <- translate_to_svampeatlas(redlist_species_old)
+
+dk_redlist_updated <- gsub(" ","_",dk_redlist_updated$new_name)
+
+saveRDS(dk_redlist_updated,here::here("data","dk_redlist_updated.RDS"))
+```
+
+#### concatenate all names from unite ####
+```{r}
+#get translated unite sh names
+unite_conversion <- readRDS(here::here("data","Unite2019_names_translated_to_SvampeatlasRDS"))
+unite_sh_names <- unite_conversion$new_name
+
+unique_unite_species <- c(names(table(unite_sh_names)),"Buglossoporus_quercinus") 
+
+saveRDS(unique_unite_species,here::here("data","unique_unite_species.RDS"))
+```
+
+#### number of redlist species in unite and genbank ####
+```{r, eval=F}
+dk_redlist_updated <- readRDS(here::here("data","dk_redlist_updated.RDS"))
+unique_unite_species <- readRDS(here::here("data","unique_unite_species.RDS"))
+
+sum(dk_redlist_updated %in% unique_unite_species) # [1] 502
+
+library(rentrez)
+
+results <- list()
+hit_numbers <- vector()
+
+options(ENTREZ_KEY = "870bca84f5753d51f7cae3f745ff9adb2d09")
+
+for (tax_no in seq_along(dk_redlist_updated)){
+  search_term <- paste0(dk_redlist_updated[tax_no],"[Organism] AND internal_transcribed_spacer_2[misc_feature]")
+  results[[tax_no]] <- entrez_search(db="nuccore", term=search_term, retmax=10)
+  hit_numbers[tax_no] <- results[[tax_no]]$count
+}
+
+saveRDS(results,"GenBank_fungi_rl_retrieval.RDS")
+saveRDS(hit_numbers,"GenBank_fungi_rl_hits.RDS")
+
+#get number of study species with ITS2 data in GenBank 
+sum(hit_numbers == 0) # 145
+sum(hit_numbers > 0) # 511
+
+```
+ 
+#### Redlist plot ####
+```{r}
+dk_redlist_updated <- readRDS(here::here("data","dk_redlist_updated.RDS"))
+unique_unite_species <- readRDS(here::here("data","unique_unite_species.RDS"))
+redlist_species <- dk_redlist_updated
+
+#restricting redlist taxa to those names present in reference database
+unite_restricted_redlist <- dk_redlist_updated[dk_redlist_updated %in% unique_unite_species]
+
+rlsumT <- vector()
+rlsumU <- vector()
+rlspeciesT <- list()
+rlspeciesU <- list()
+for(i in 1:length(read_otu)){
+ tab <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+ rlsumT[i] <- sum(names(table(tab$species)) %in% redlist_species)
+ rlsumU[i] <- sum(names(table(tab$species)) %in% unite_restricted_redlist)
+ rlspeciesT[[i]] <- tab$species[tab$species %in% redlist_species]
+ rlspeciesU[[i]] <- tab$species[tab$species %in% unite_restricted_redlist]
+}
+
+rlsumT #  [1] 144 137  95 100  96  82  44  41  13  85  77  64
+rlsumU #  [1] 111 105  71  74  70  59  37  35  12  85  77  64
+
+intersect(rlspeciesT[[4]],rlspeciesT[[10]])
+setdiff(rlspeciesT[[10]],rlspeciesT[[4]])
+setdiff(rlspeciesT[[4]],rlspeciesT[[10]])
+intersect(rlspeciesT[[7]],rlspeciesT[[10]])
+rlspeciesT[[10]]
+rlspeciesT[[1]]
+
+datasetR = rep(c(rep(c("Fruitbody","Fruitbody (soil)","Fruitbody (non soil)","OTU"),each=3)),times=2)
+subsetR <- rep(c("Full data","Agarico-\nmycetes","Agaricales"), times=8)
+scoreR <- c(rlsumU[1:12],rlsumT[1:12]-rlsumU[1:12])
+referenceR <- c(rep("Yes",12),rep("No",12))
+dfRL <- data.frame(dataset=datasetR,RL_count=scoreR,reference=referenceR, subset=subsetR)
+dfRL$dataset <- factor(dfRL$dataset, levels=c("Fruitbody","Fruitbody (soil)","Fruitbody (non soil)","OTU"))
+dfRL$reference <- factor(dfRL$reference, levels=c("No","Yes"))
+dfRL$subset <- factor(dfRL$subset, levels=c("Full data","Agarico-\nmycetes","Agaricales"))
+
+dfRL <- dfRL %>% filter(dataset != "Fruitbody" & dataset != "Fruitbody (non soil)" )
+
+RLplot1 <- ggplot(dfRL,aes(dataset,weight=RL_count)) + geom_bar(aes(fill=reference)) + facet_grid(~subset) + theme_bw()+ theme(axis.text = element_text(colour="black"),axis.text.x = element_text(angle = 45, hjust = 1),text = element_text(size=7)) + xlab("") + ylab("Number of redlist species") + guides(fill=guide_legend(title="Species in DNA\nreference-db")) + scale_fill_manual(values=c("gray21","gray51"))
+
+RLplot1 <- ggplot(dfRL,aes(dataset,weight=RL_count)) + geom_bar(aes(fill=reference)) + facet_rep_grid(~subset) + xlab("") + ylab("Number of redlist species") + guides(fill=guide_legend(title="Species in DNA\nreference-db")) + scale_fill_manual(values=c("gray21","gray51")) + theme_bw() + theme(panel.grid.minor = element_blank(),
+                     panel.grid.major = element_blank(),
+                     text=element_text(size=7),
+                     axis.text = element_text(colour="black"),
+                     axis.text.x = element_text(angle = 45, hjust = 1),
+                     panel.border = element_blank(),
+                     axis.line = element_line(colour = 'black', size = 0.25),
+                     strip.background = element_rect(colour="white", fill="white"))
+ggsave(here::here("plots","Fig6_R2.pdf"), RLplot1, width=8, height=8,units = "cm")
+```
+
+#### supplementary redlist plots ####
+```{r}
+dk_redlist_updated <- readRDS(here::here("data","dk_redlist_updated.RDS"))
+redlist_species <- dk_redlist_updated
+
+unique_unite_species <- readRDS(here::here("data","unique_unite_species.RDS"))
+redlist_species <- dk_redlist_updated
+
+#restricting redlist taxa to those names present in reference database
+unite_restricted_redlist <- dk_redlist_updated[dk_redlist_updated %in% unique_unite_species]
+
+
+
+#Calculating redlist species richness for the different tables
+redlist_richness_results <- data.frame(matrix(NA, nrow = 130, ncol = 2*length(read_otu)))
+names(redlist_richness_results)[1:12] <- paste0("redlist_",all_tabs)
+names(redlist_richness_results)[13:24] <- paste0("restricted_redlist_",all_tabs)
+
+redlist_proportions <- data.frame(matrix(NA, nrow = 130, ncol = 2*length(read_otu)))
+names(redlist_proportions)[1:12] <- paste0("redlistprop_",all_tabs)
+names(redlist_proportions)[13:24] <- paste0("restrictedredlistprop_",all_tabs)
+
+cur_redsp <- list()
+cur_redsp_restr <- list()
+cur_redsp_list <- list()
+for(i in 1:length(read_otu)){
+ tab <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+ ii=1
+ for (smp in samples){
+  cur_spec <- tab$species[which(tab[,smp]>0)]
+  cur_redsp[[smp]] <- cur_spec[cur_spec %in% redlist_species]
+  cur_redsp_restr[[smp]] <- cur_spec[cur_spec %in% unite_restricted_redlist]
+  redlist_richness_results[ii,i] <- length(cur_redsp[[smp]])
+  redlist_richness_results[ii,i+12] <- length(cur_redsp_restr[[smp]])
+  redlist_proportions[ii,i] <- length(cur_redsp[[smp]])/length(cur_spec)
+  redlist_proportions[ii,i+12] <- length(cur_redsp_restr[[smp]])/length(cur_spec)
+  ii=ii+1
+ }
+ cur_redsp_list[[i]] <- cur_redsp
+ cur_redsp_list[[i+12]] <- cur_redsp_restr
+}
+
+redlist_richness_resultsX <- redlist_richness_results
+redlist_richness_resultsX[redlist_richness_resultsX == 2] <- 1
+redlist_richness_resultsX[redlist_richness_resultsX > 3] <- 3
+
+DNA_RL_countRS <- rep(c(redlist_richness_resultsX[[10]],redlist_richness_resultsX[[11]],redlist_richness_resultsX[[12]]),times=6)
+Survey_RL_countRS <- c(redlist_richness_resultsX[[1]],redlist_richness_resultsX[[2]],redlist_richness_resultsX[[3]],redlist_richness_resultsX[[4]],redlist_richness_resultsX[[5]],redlist_richness_resultsX[[6]],redlist_richness_resultsX[[7]],redlist_richness_resultsX[[8]],redlist_richness_resultsX[[9]],redlist_richness_resultsX[[13]],redlist_richness_resultsX[[14]],redlist_richness_resultsX[[15]],redlist_richness_resultsX[[16]],redlist_richness_resultsX[[17]],redlist_richness_resultsX[[18]],redlist_richness_resultsX[[19]],redlist_richness_resultsX[[20]],redlist_richness_resultsX[[21]])
+SubsetRS <- rep(rep(c("Full data","Agaricomycetes","Agaricales"),each=130),times=6)
+ReferenceRL <- rep(c("All taxa","db-restricted"),each=1170)
+FocusRL <- rep(rep(c("Fruitbody","Fruitbody (soil)","Fruitbody (non soil)"),each=390), times=2)
+
+dfRLS <- data.frame(Survey_count=Survey_RL_countRS,DNA_count=DNA_RL_countRS,reference=ReferenceRL, subset=SubsetRS, Focus=FocusRL)
+dfRLS$reference <- factor(dfRLS$reference, levels=c("All taxa","db-restricted"))
+dfRLS$subset <- factor(dfRLS$subset, levels=c("Full data","Agaricomycetes","Agaricales"))
+dfRLS$Focus <- factor(dfRLS$Focus, levels=c("Fruitbody","Fruitbody (soil)","Fruitbody (non soil)"))
+
+dfRLSsum <- dfRLS %>% group_by(Survey_count,DNA_count,reference,subset,Focus) %>% summarise(sumX = n())
+
+RL_tab_plot3 <- dfRLSsum %>% filter(Focus == "Fruitbody") %>% ggplot(aes(factor(DNA_count),factor(Survey_count),label=sumX)) + facet_grid(reference~subset) + theme(panel.background = element_rect(fill = NA, color = "black")) + theme_bw() + xlab("Number of redlist species (DNA)") + ylab("Number of redlist species (fruitbody, all)") + guides(col=guide_legend(title="Restricted to species\nin DNA reference-db")) + scale_x_discrete(labels=c("0" = "0", "1" = "1-2","3" = "3+")) + scale_y_discrete(labels=c("0" = "0", "1" = "1-2","3" = "3+")) + geom_text() +  geom_vline(xintercept=seq(1.5, 2.5, 1),lwd=0.5, colour="black")+  geom_hline(yintercept=seq(1.5, 2.5, 1),lwd=0.5, colour="black")  + theme(axis.text = element_text(colour="black"))  + theme_bw() + theme(panel.grid.minor = element_blank(),
+                     panel.grid.major = element_blank(),
+                     text=element_text(size=7),
+                     axis.text = element_text(colour="black"),
+                     axis.line = element_line(colour = 'black', size = 0.25),
+                     strip.background = element_rect(colour="white", fill="white"))
+
+RL_tab_plotSoil <- dfRLSsum %>% filter(Focus == "Fruitbody (soil)") %>% ggplot(aes(factor(DNA_count),factor(Survey_count),label=sumX)) + facet_grid(reference~subset) + theme(panel.background = element_rect(fill = NA, color = "black")) + theme_bw() + xlab("Number of redlist species (DNA)") + ylab("Number of redlist species (fruitbody, soil)") + guides(col=guide_legend(title="Restricted to species\nin DNA reference-db")) + scale_x_discrete(labels=c("0" = "0", "1" = "1-2","3" = "3+")) + scale_y_discrete(labels=c("0" = "0", "1" = "1-2","3" = "3+")) + geom_text() +  geom_vline(xintercept=seq(1.5, 2.5, 1),lwd=0.5, colour="black")+  geom_hline(yintercept=seq(1.5, 2.5, 1),lwd=0.5, colour="black")  + theme(axis.text = element_text(colour="black"))+ theme(panel.grid.minor = element_blank(),
+                     panel.grid.major = element_blank(),
+                     text=element_text(size=7),
+                     axis.text = element_text(colour="black"),
+                     axis.line = element_line(colour = 'black', size = 0.25),
+                     strip.background = element_rect(colour="white", fill="white"))
+
+Composite_plot3 <- plot_grid(RL_tab_plot3,RL_tab_plotSoil, nrow = 2, ncol=1,
+                            labels = c("a","b"))
+
+ggsave(here::here("plots","S_Fig4_R2.pdf"), Composite_plot3, width=14, height=16, units = "cm")
+
+overlap_RL <- list()
+onlyS_RL <- list()
+onlyD_RL <- list()
+totalDS_RL <- list()
+overlap_sc <- vector()
+onlyS_sc <- vector()
+onlyD_sc <- vector()
+for(i in 1:130){
+ if(length(cur_redsp_list[[10]][[i]]) > 0 | length(cur_redsp_list[[16]][[i]])){
+  overlap_RL[[i]] <- intersect(cur_redsp_list[[10]][[i]],cur_redsp_list[[16]][[i]])
+  onlyS_RL[[i]] <- setdiff(cur_redsp_list[[10]][[i]],cur_redsp_list[[16]][[i]])
+  onlyD_RL[[i]] <- setdiff(cur_redsp_list[[16]][[i]],cur_redsp_list[[10]][[i]])
+  totalDS_RL[[i]] <- union(cur_redsp_list[[16]][[i]],cur_redsp_list[[10]][[i]])
+  overlap_sc[i] <- length(overlap_RL[[i]])/length(totalDS_RL[[i]])
+  onlyS_sc[i] <- length(onlyS_RL[[i]])/length(totalDS_RL[[i]])
+  onlyD_sc[i] <- length(onlyD_RL[[i]])/length(totalDS_RL[[i]])
+  
+ } else {
+  overlap_RL[[i]] <- NA
+  onlyS_RL[[i]] <- NA
+  onlyD_RL[[i]] <- NA
+ }
+}
+sort(table(unlist(onlyD_RL)),decreasing = T)
+mean(onlyD_sc,na.rm = T)
+mean(onlyS_sc,na.rm = T)
+mean(overlap_sc,na.rm = T)
+
+####IKKE KØRT
+td <- 7
+for(i in 1:6){
+ tabS <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+ tabD <- read.csv(read_otu[td],sep='\t',header=T,as.is=TRUE,row.names = 1)
+ ii=1
+ td=td+1
+ if(td==10){td <- 7}
+ for (smp in samples){
+  cur_specS <- tabS$species[which(tabS[,smp]>0)]
+  cur_specD <- tabD$species[which(tabD[,smp]>0)]
+  cur_specT <- length(c(cur_specS,cur_specD))
+  cur_overlap <- length(intersect(cur_specS,cur_specD))
+  cur_specU <- cur_specT-cur_overlap
+  overlap_results[ii,i] <- cur_overlap/cur_specU
+  onlysurvey_results[ii,i] <- (length(cur_specS)-cur_overlap)/cur_specU
+  onlydna_results[ii,i] <- (length(cur_specD)-cur_overlap)/cur_specU
+  ii=ii+1
+ }
+}
+```
+
+#### red list table ####
+```{r}
+dfRLS <- list()
+for (ii in seq(1:24)){
+ dfRLS[[ii]] <- data.frame(table(unlist(cur_redsp_list[[ii]])))
+}
+
+fruitbody_dna_redlistspecies <- list(dfRLS[[1]],dfRLS[[10]])
+
+FDRL <- fruitbody_dna_redlistspecies %>% Reduce(function(dtf1,dtf2) full_join(dtf1,dtf2,by="Var1"), .)
+
+names(FDRL) <- c("Species","Fruitbody","OTU")
+FDRL$soil <- ""
+FDRL$soil[FDRL$Species %in% dfRLS[[4]]$Var1] <- "x"
+FDRL$refdb <- ""
+FDRL$refdb[FDRL$Species %in% unite_restricted_redlist] <- "x"
+FDRL[is.na(FDRL)] <- ""
+
+all_tabs <- c("ds_survey_full.txt","ds_dna_full.txt")
+read_otu <- here::here("data", all_tabs)
+tabF <- read.csv(read_otu[1],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tabD <- read.csv(read_otu[2],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tabF$SH <- ""
+indexT <- c("species","order","class","SH")
+tabD <- tabD[,indexT]
+tabF <- tabF[,indexT]
+tabF <- tabF[!tabF$species %in% tabD$species,]
+tab2 <- rbind(tabF,tabD)
+#unique(tab2)
+
+tab2 <- tab2[!duplicated(tab2[,c(1,2,3)]),]
+RedListTable <- left_join(FDRL,tab2, by=c("Species"="species"))
+RedListTable <- RedListTable[order(RedListTable$Species),]
+RedListTable$Species <- gsub("_"," ",RedListTable$Species)
+
+new_names <- readRDS(here::here("data", "unite_reannotation.RDS")) # mapping file
+RedListTable2 <- left_join(RedListTable, new_names[,c(2,9)], by = "SH")
+
+indexX <- which(!is.na(RedListTable2$species.x))
+RedListTable2$SH[indexX] <- paste0(RedListTable2$SH[indexX]," (as ",RedListTable2$species.x[indexX],")")
+RedListTable2 <- RedListTable2[,-9]
+
+write.table(RedListTable2,here::here("tables","Redlist_table.txt"),sep="\t", quote = F, row.names = F)
+
+RedListTable2$Fruitbody[RedListTable2$Fruitbody ==""] <- 0
+RedListTable2$OTU[RedListTable2$OTU == ""] <- 0
+RedListTable2$Fruitbody <- as.numeric(RedListTable2$Fruitbody)
+RedListTable2$OTU <- as.numeric(RedListTable2$OTU)
+
+nrow(RedListTable2)
+sum(RedListTable2$OTU>0) # 177 - number of redlist observations otu
+sum(RedListTable2$OTU>0) # 85 - number of redlist otu
+
+sum(RedListTable2$Fruitbody, na.rm = T) # 303 - number of redlist observations
+sum(RedListTable2$Fruitbody>0, na.rm = T) # 144 - number of redlist species
+sum(RedListTable2$Fruitbody>0 & RedListTable2$soil == "x" & RedListTable2$refdb == "x") # 74 - number of soil redlist species (also as ref_db)
+
+sum(RedListTable2$Fruitbody>0 & RedListTable2$OTU>0) # 39 reslist species with both methods
+sum(RedListTable2$Fruitbody>0 & RedListTable2$OTU==0) # 105 redlist as only frb
+sum(RedListTable2$Fruitbody==0 & RedListTable2$OTU>0) # 46 redlist as only otu
+sum(RedListTable2$Fruitbody>0 & RedListTable2$OTU>0 & RedListTable2$soil != "x")
+RedListTable2[(RedListTable2$Fruitbody>0 & RedListTable2$OTU>0 & RedListTable2$soil != "x"),]
+
+is.na(RedListTable2$Fruitbody) <- 0
+is.na(RedListTable2$OTU) <- 0
+
+```
+
+
+#### list of redlist otus in sites for expert evaluation ####
+```{r}
+
+RedListTable2 <- read.table(here::here("tables","Redlist_table.txt"),sep="\t", header = T)
+
+redlist_speciesX <- RedListTable2$Species
+
+redlist_speciesX <- gsub(" ","_",redlist_speciesX)
+
+dtab <- read.table(here::here("data","ds_dna_full.txt"),sep='\t',header=T,as.is=TRUE,row.names = 1)
+
+redlist_dataframe <- dtab[dtab$species %in% redlist_speciesX,]
+redlist_dataframex <- redlist_dataframe
+
+#output redlist species registered as otus site wise for evaluation
+for(i in 1:130){
+#redlist_dataframex[,i][redlist_dataframex[,i]==1] <- redlist_dataframex$species[redlist_dataframex[,i]==1]
+print(paste(names(redlist_dataframex)[i],": ",paste(redlist_dataframex$species[redlist_dataframex[,i]==1],collapse = ", ")))
+}
+
+redlist_dataframey <- redlist_dataframex
+#make a matrix of it
+#for(i in 2:131){
+#redlist_dataframey[,i][redlist_dataframey[,i]==1] <- redlist_dataframey$species[redlist_dataframey[,i]==1]
+#}
+#write.table(redlist_dataframex,"Redlist_matrix.tsv",sep="\t", quote = F, row.names = F)
+```
+
+
+#### community composition and explained variation ####
+```{r,eval=F, echo=F}
+#selected tables for analyses
+all_tabs <- c("ds_survey_full.txt","ds_survey_agaricomycetes.txt","ds_survey_agaricales.txt","ds_soilsurvey_full.txt","ds_soilsurvey_agaricomycetes.txt","ds_soilsurvey_agaricales.txt","ds_dna_full.txt","ds_dna_agaricomycetes.txt","ds_dna_agaricales.txt")
+
+read_otuk <- here::here("data", all_tabs)
+
+#Calculating community dissimilarity for the different tables
+#findiing out which samples to remove due to richness below 4
+remove_index <- list()
+for(i in 1:length(read_otu)){
+   tab_d <- read.csv(read_otuk[i],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+   tab_d <- tab_d[,samples]
+   tab_d[tab_d>1] <- 1
+   remove_index[[i]] <- which(colSums(tab_d) < 4)
+}
+
+remove_index
+#VU029 VO036 EM054 SM103 FL115 
+#   29    36    54   103   115 
+#so when comparing the surveys data with dna we need to remove those sites
+
+#calculate all community dissimilarities (for survey) removing undersampled sites
+com_dis_ds <- list() # 
+ttab_ds <- list()
+for(i in 1:length(read_otuk)){
+   tab_ds <- read.csv(read_otuk[i],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+   tab_ds <- tab_ds[,samples]
+   tab_ds <- tab_ds[,-c(29,36,54,103,115)]
+   tab_ds[tab_ds>1] <- 1
+   ttab_ds[[i]] <- t(tab_ds)
+   com_dis_ds[[i]] <- vegdist(ttab_ds[[i]], method="bray", binary=TRUE)
+}
+
+saveRDS(com_dis_ds, here::here("data","com_dis_ds.RDS"))
+saveRDS(ttab_ds, here::here("data","ttab_ds_dsRDS"))
+
+com_dis_ds <- readRDS(here::here("data","com_dis_ds.RDS"))
+ttab_ds <- readRDS(here::here("data","ttab_ds_dsRDS"))
+
+#Mantel tests - comparing community dissimilarity based on survey and DNA (full data and agaricomycetes)
+mt1 <- mantel(com_dis_ds[[1]], com_dis_ds[[7]], method="pearson", permutations=999) # full data
+mt2 <- mantel(com_dis_ds[[2]], com_dis_ds[[8]], method="pearson", permutations=999) # agaricomycetes
+mt3 <- mantel(com_dis_ds[[3]], com_dis_ds[[9]], method="pearson", permutations=999)
+mt4 <- mantel(com_dis_ds[[4]], com_dis_ds[[7]], method="pearson", permutations=999) # full data
+mt5 <- mantel(com_dis_ds[[5]], com_dis_ds[[8]], method="pearson", permutations=999) # agaricomycetes
+mt6 <- mantel(com_dis_ds[[6]], com_dis_ds[[9]], method="pearson", permutations=999)
+
+Mstat <- c(mt1$statistic,mt2$statistic,mt3$statistic,mt4$statistic,mt5$statistic,mt6$statistic)
+Mstat
+#[1] 0.6744143 0.6647300 0.6217535 0.6843559 0.6933113 0.6442945
+
+#for plotting - not used in manuscript
+Mdataset <- rep(c("All taxa","Agaricomycetes","Agaricales"),times=2)
+Mfocus <- rep(c("All data","Soil species"),each=3)
+Mdf <- data.frame(Mstat=Mstat,dataset=Mdataset,Survey_data=Mfocus)
+Mdf$dataset <- factor(Mdf$dataset,levels = c("Alltaxa","Agaricomycetes","Agaricales"))
+Mdf$Survey_data <- factor(Mdf$Survey_data,levels = c("All data","Soil species"))
+saveRDS(Mdf,"Mdf_RDS")
+Mdf <- readRDS("Mdf_RDS")
+Mdf$dataset <- plyr::revalue(Mdf$dataset, c("All taxa"="All\ntaxa", "Agaricomycetes"="Agarico-\nmycetes", "Agaricales"="Agari-\ncales"))
+Mantelplot <- ggplot(Mdf,aes(dataset,weight=Mstat,fill=Survey_data)) + geom_bar(position = "dodge")  + ylab("Mantel r-statistic")  +scale_color_brewer(palette = "Set1") +  theme_bw() + theme(axis.text = element_text(colour="black"),text = element_text(size=12)) + guides(fill=guide_legend(title="Fruitbody data")) + xlab("")
+
+#Procrustes tests -  - comparing ordinations based on dissimilarity based on survey and DNA (full data and agaricomycetes)
+protest(com_dis_ds[[1]], com_dis_ds[[7]]) # 0.8805
+protest(com_dis_ds[[2]], com_dis_ds[[8]]) # 0.8688 
+protest(com_dis_ds[[3]], com_dis_ds[[9]]) # 0.8305
+protest(com_dis_ds[[4]], com_dis_ds[[7]]) # 0.8783
+protest(com_dis_ds[[5]], com_dis_ds[[8]]) # 0.8698
+protest(com_dis_ds[[6]], com_dis_ds[[9]]) # 0.8335
+
+#read environmental data
+env <- read.csv(here::here("data","environmental_variables.txt"),sep='\t',header=T,as.is=TRUE)
+#discard sites that were undersampled
+env2 <- env[-c(29,36,54,103,115),]
+
+#Fitting of selected environmental variables as predicor variables for community dissimilarity
+fit1 <- bioenv(ttab_ds[[1]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) # full survey
+fit2 <- bioenv(ttab_ds[[2]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) #  agaricomycetes survey
+fit3 <- bioenv(ttab_ds[[3]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) # agaricales survey
+fit4 <- bioenv(ttab_ds[[4]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) # full soil survey
+fit5 <- bioenv(ttab_ds[[5]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) #  agaricomycetes soil survey
+fit6 <- bioenv(ttab_ds[[6]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) # agaricales soil survey
+fit7 <- bioenv(ttab_ds[[7]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) #  eDNA
+fit8 <- bioenv(ttab_ds[[8]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) #  agaricomycetes eDNA
+fit9 <- bioenv(ttab_ds[[9]], env2, method = "spearman", index = "bray", upto = 4, trace = FALSE, partial = NULL) #  agaricomycales eDNA
+
+#show all input variables and variables selected by fitting
+names(env2)
+sf1 <- summary(fit1)
+sf2 <- summary(fit2)
+sf3 <- summary(fit3)
+sf4 <- summary(fit4)
+sf5 <- summary(fit5)
+sf6 <- summary(fit6)
+sf7 <- summary(fit7)
+sf8 <- summary(fit8)
+sf9 <- summary(fit9)
+
+sf1
+sf2
+sf3
+sf4
+sf5
+sf6
+sf7
+sf8
+sf9
+
+# > sf1
+#                                            size correlation
+# ellenberg_n                                   1      0.3230
+# ellenberg_l ellenberg_n                       2      0.4681
+# soil_p ellenberg_l ellenberg_n                3      0.5010
+# soil_p ellenberg_l ellenberg_f ellenberg_n    4      0.5063
+# > sf2
+#                                            size correlation
+# ellenberg_n                                   1      0.3222
+# ellenberg_l ellenberg_n                       2      0.4635
+# soil_p ellenberg_l ellenberg_n                3      0.5034
+# soil_p ellenberg_l ellenberg_f ellenberg_n    4      0.5061
+# > sf3
+#                                            size correlation
+# ellenberg_n                                   1      0.3025
+# ellenberg_l ellenberg_n                       2      0.4450
+# soil_p ellenberg_l ellenberg_n                3      0.4923
+# soil_p ellenberg_l ellenberg_f ellenberg_n    4      0.4992
+# > sf4
+#                                        size correlation
+# ellenberg_n                               1      0.3152
+# ellenberg_l ellenberg_n                   2      0.4584
+# soil_p ellenberg_l ellenberg_n            3      0.4955
+# soil_ph soil_p ellenberg_l ellenberg_n    4      0.5073
+# > sf5
+#                                        size correlation
+# ellenberg_n                               1      0.3168
+# ellenberg_l ellenberg_n                   2      0.4556
+# soil_p ellenberg_l ellenberg_n            3      0.4925
+# soil_ph soil_p ellenberg_l ellenberg_n    4      0.5037
+# > sf6
+#                                        size correlation
+# ellenberg_n                               1      0.2947
+# ellenberg_l ellenberg_n                   2      0.4339
+# soil_p ellenberg_l ellenberg_n            3      0.4770
+# soil_ph soil_p ellenberg_l ellenberg_n    4      0.4923
+# > sf7
+#                                             size correlation
+# soil_ph                                        1      0.4120
+# soil_ph ellenberg_n                            2      0.5866
+# soil_ph ellenberg_f ellenberg_n                3      0.6647
+# soil_ph ellenberg_l ellenberg_f ellenberg_n    4      0.6765
+# > sf8
+#                                        size correlation
+# soil_ph                                   1      0.4796
+# soil_ph ellenberg_f                       2      0.5482
+# soil_ph ellenberg_f ellenberg_n           3      0.6000
+# soil_ph soil_p ellenberg_f ellenberg_n    4      0.6096
+# > sf9
+#                                        size correlation
+# soil_ph                                   1      0.4548
+# soil_ph ellenberg_f                       2      0.5010
+# soil_ph soil_p ellenberg_f                3      0.5285
+# soil_ph soil_p ellenberg_f ellenberg_n    4      0.5571
+
+corFI <- c(sf1$correlation,sf2$correlation,sf3$correlation,sf4$correlation,sf5$correlation,sf6$correlation,sf7$correlation,sf8$correlation,sf9$correlation)
+variabFI <- rep(c(1,2,3,4),times=9)
+dataset <- rep(c("Fruitbody","Fruitbody (soil)","OTU"),each=12)
+subset <- rep(rep(c("Full","Agaricomycetes","Agaricales"),each=4),times=3)
+
+dfFI <- data.frame(corFI,variabFI,dataset,subset)
+dfFI$dataset <- factor(dfFI$dataset,levels = c("Fruitbody","Fruitbody (soil)","OTU"))
+dfFI$subset <- factor(dfFI$subset,levels = c("Full","Agaricomycetes","Agaricales"))
+
+names(dfFI)[3:4] <- c("Dataset","Subset")
+
+explained_var <- ggplot(dfFI,aes(variabFI,corFI)) + geom_line(aes(linetype=subset)) + geom_point(pch=21,size=1) + facet_rep_grid(.~Dataset) + scale_color_brewer(palette = "Set1",breaks = c("OTU", "Fruitbody","Fruitbody (soil)")) +
+  xlab("Number of explanatory environmental parameters") +
+  ylab("Proportion of variation explained") +
+  scale_fill_brewer(palette = "Set1") + ylim(c(0,0.7))+
+  theme_bw() + theme(axis.text = element_text(colour="black"),text = element_text(size=12)) + guides(color=guide_legend(title="Dataset"),linetype=guide_legend(title="Subset")) + scale_linetype_discrete(breaks = c("Full", "Agaricomycetes","Agaricales")) + theme_bw() + theme(panel.grid.minor = element_blank(),
+                     panel.grid.major = element_blank(),
+                     text=element_text(size=7),
+                     axis.text = element_text(colour="black"),
+                     legend.position = c(0.8,0.2),
+                     panel.border = element_blank(),
+                     axis.line = element_line(colour = 'black', size = 0.25),
+                     strip.background = element_rect(colour="white", fill="white"))
+
+ggsave(here::here("plots","Fig7_R2.pdf"), explained_var, width=6, height=4)
+
+```
+
+
+#### basic stats #### INCORPORATE!!!
+```{r}
+dna_tab <- read.csv(here::here("data","ds_dna_full.txt"),sep='\t',header=T,as.is=TRUE) #read table 10 jan accessed!!!!
+top_phyl  <- read.csv(here::here("data","top50_phylum_20190110.txt"),sep='\t',header=T,as.is=TRUE) #read table
+top_class  <- read.csv(here::here("data","top50_class_20190110.txt"),sep='\t',header=T,as.is=TRUE) #read table
+top_order  <- read.csv(here::here("data","top50_order_20190110.txt"),sep='\t',header=T,as.is=TRUE) #read table
+top_hits <- read.csv(here::here("data","top50hits_blast.txt"),sep='\t',header=F,as.is=TRUE) #read table
+
+tabS <- list()
+for(i in 1:length(read_otu)){
+ tabS[[i]] <- read.csv(read_otu[i],sep='\t',header=T,as.is=TRUE) #read table
+}
+
+sum(tabS[[10]][,samples]>0) # 37289  obs OTU
+sum(tabS[[11]][,samples]>0) # 8739  obs OTU Agaricomycetes
+sum(tabS[[12]][,samples]>0) # 4474  obs OTU Agaricales
+
+sum(tabS[[1]][,samples]>0) # 8793  obs fruitbodies
+sum(tabS[[2]][,samples]>0) # 7233 agaricomycetes
+sum(tabS[[3]][,samples]>0) # 4326 agaricales
+
+nrow(tabS[[1]]) # 1751 species of fruitbodies
+nrow(tabS[[2]]) # 1359 species of Agaricomycetes fruitbodies
+nrow(tabS[[3]]) # 1751 species of fruitbodies
+
+nrow(tabS[[10]]) # 10490 species of fruitbodies
+nrow(tabS[[11]]) # 2741 species of Agaricomycetes otus
+nrow(tabS[[12]]) # 1480 species of fruitbodies
+
+1204/(1204+547)*100 # 68.76071 % found only as frb
+547/(1204+547)*100 # 31.23929 % found also as otu
+9796/(9796+694) # 0.9338418 found only as OTU
+694/(9796+694) # 0.06615825 found also as frb
+
+#stats on taxonomic assignment
+sum(dna_tab$pident>=98.5) # 2670 [1] 3796
+sum(dna_tab$pident>=98.5)/nrow(dna_tab) # 0.3292232 [1] 0.3618684
+
+sum(dna_tab$pident>=97) # 3730 [1] 5501
+sum(dna_tab$pident>=97)/nrow(dna_tab) # 0.459926 [1] 0.5244042
+
+sum(dna_tab$phylum != "unidentified") # 7496 [1] 9936
+sum(dna_tab$phylum != "unidentified")/nrow(dna_tab) # 0.924291 [1] 0.9471878
+
+sum(dna_tab$class != "unidentified") # 6606 [1] 9115
+sum(dna_tab$class != "unidentified")/nrow(dna_tab) # 0.8145499 [1] 0.8689228
+
+sum(dna_tab$order != "unidentified") # 5974 [1] 8688
+sum(dna_tab$order != "unidentified")/nrow(dna_tab) # 0.7366215 [1] 0.8282173
+
+sum(dna_tab$family != "unidentified") # 4591 [1] 6742
+sum(dna_tab$family != "unidentified")/nrow(dna_tab) # 0.5660912 [1] 0.6427073
+
+sum(dna_tab$genus != "unidentified") # 3621 [1] 5438
+sum(dna_tab$genus != "unidentified")/nrow(dna_tab) # 0.4464858 [1] 0.5183985
+
+dna_tab$species[!grepl("_sp",dna_tab$species)] #
+sum(!grepl("_sp",dna_tab$species)) # 1631 [1] 2262
+sum(!grepl("_sp",dna_tab$species))/nrow(dna_tab) # 0.2011097 [1] 0.2156339
+
+
+sum(dna_tab$pident > 97 & dna_tab$phylum == "unidentified") # 137 [1] 152
+sum(dna_tab$pident > 97 & dna_tab$phylum == "unidentified")/sum(dna_tab$phylum == "unidentified") # 0.223127 [1] 0.2743682
+
+sum(dna_tab$pident > 97 & dna_tab$class == "unidentified") # 307 [1] 414
+sum(dna_tab$pident > 97 & dna_tab$class == "unidentified")/sum(dna_tab$class == "unidentified") # 0.2041223 [1] 0.3010909
+
+sum(dna_tab$pident > 97 & dna_tab$order == "unidentified") # 409 [1] 562
+sum(dna_tab$pident > 97 & dna_tab$order == "unidentified")/sum(dna_tab$order == "unidentified") # 0.1914794 [1] 0.3118757
+
+sum(dna_tab$pident > 97 & dna_tab$family == "unidentified") # 850 [1] 1300
+sum(dna_tab$pident > 97 & dna_tab$family == "unidentified")/sum(dna_tab$family == "unidentified") # 0.2415459 [1] 0.3468517
+
+sum(dna_tab$pident > 97 & dna_tab$genus == "unidentified") # 1147 [1] 1729
+sum(dna_tab$pident > 97 & dna_tab$genus == "unidentified")/sum(dna_tab$genus == "unidentified") # 0.2555135 [1] 0.3422407
+
+sum(dna_tab$pident > 97 & grepl("_sp",dna_tab$species)) # 2057 [1] 3236
+sum(dna_tab$pident > 97 & grepl("_sp",dna_tab$species))/sum(grepl("_sp",dna_tab$species)) # 0.3174873 [1] 0.3932912
+
+UCLs <- str_split_fixed(top_hits$V3,"\\|",6)[,6]
+
+paste(intersect(top_phyl$Cluster.code, UCLs), collapse = ", ") # [1] "UCL7_006602, UCL7_009414, UCL7_007465, UCL7_008046, UCL7_007511"
+length(intersect(top_phyl$Cluster.code, UCLs)) # 5 
+length(intersect(top_phyl$Cluster.code, UCLs))/nrow(dna_tab) # 0.0006165228 # 0.0004766444
+length(intersect(top_phyl$Cluster.code, UCLs))/sum(dna_tab$phylum == "unidentified") #0.008143322 # 0.009025271
+
+paste(intersect(top_class$Cluster.code, UCLs), collapse = ", ") # "UCL7_003532, UCL7_006316, UCL7_000812, UCL7_003368, UCL7_002583, UCL7_004820, UCL7_000730, UCL7_002432, UCL7_000363, UCL7_009980, UCL7_002863, UCL7_003426, UCL7_006602, UCL7_002749, UCL7_009013"
+length(intersect(top_class$Cluster.code, UCLs)) # 15 
+length(intersect(top_class$Cluster.code, UCLs))/nrow(dna_tab) # 0.001849568 # 0.001429933
+length(intersect(top_class$Cluster.code, UCLs))/sum(dna_tab$class == "unidentified") # 0.009973404 #0.01090909
+
+paste(intersect(top_order$Cluster.code, UCLs), collapse = ", ") # "UCL7_003532, UCL7_002869, UCL7_000925, UCL7_006316, UCL7_000900, UCL7_000812, UCL7_002583, UCL7_005496, UCL7_004062, UCL7_003968, UCL7_000792, UCL7_003368"
+length(intersect(top_order$Cluster.code, UCLs)) # 12
+length(intersect(top_order$Cluster.code, UCLs))/nrow(dna_tab) # 0.0009864365 # 0.001143947
+length(intersect(top_order$Cluster.code, UCLs))/sum(dna_tab$order == "unidentified") # 0.003745318 #0.006659267
+
+dna_tab[dna_tab$pident>98 & dna_tab$phylum == "unidentified",3:132]
+sum(dna_tab$class == "unidentified")
+sum(dna_tab$order == "unidentified")
+
+sum(dna_tab[dna_tab$species == "Ganoderma_applanatum",samples]>0) # 35
+names(dna_tab[,samples])[dna_tab[dna_tab$species == "Ganoderma_applanatum",samples]>0]
+# [1] "NV004" "NV009" "NH020" "NH021" "NH023" "NH024" "NH025" "VD046" "VD047" "VD048" "VD049" "VD050" "VD051" "EM056" "EM059" "ES069" "EV072" "EV075" "EV078" "SN081" "SN082" "SN085" "SV092" "SM097" "SM098" "SM099" "SM101"
+# [28] "FF105" "FF107" "FF112" "FL115" "FL116" "FL118" "FM121" "FM124"
+
+```
+
+#### Supplementary figure 6 Species recaptured by DNA ####
+```{r,echo=FALSE}
+all_tabs <- c("ds_survey_full.txt","ds_soilsurvey_full.txt","ds_nonsoilsurvey_full.txt","ds_dna_full.txt")
+#all_tabs <- c("ds_survey_full.txt")
+read_otuX <- here::here("data", all_tabs)
+# Vector for filtering
+
+tab_fs <- read.csv(read_otu[1],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tab_ss <- read.csv(read_otu[4],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tab_ns <- read.csv(read_otu[7],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tab_dn <- read.csv(read_otu[10],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+names_fs <- names(table(tab_fs$species))
+names_ss <- names(table(tab_ss$species))
+names_ns <- names(table(tab_ns$species))
+names_dn <- names(table(tab_dn$species))
+
+sum_issdn <- length(intersect(names_ss,names_dn))
+sum_sdssdn <- length(setdiff(names_ss,names_dn))
+sum_insdn <- length(intersect(names_ns,names_dn))
+sum_sdnsdn <- length(setdiff(names_ns,names_dn))
+
+scoresOL <- c(sum_issdn,sum_sdssdn,sum_insdn,sum_sdnsdn)
+datasetOL <- c("fruitbody & otu","fruitbody only","fruitbody & otu","fruitbody only")
+locationOL <- c("soil","soil","non-soil","non-soil")
+
+dfOL <- data.frame(score=scoresOL, registered_as=datasetOL, location=locationOL)
+dfOL$registered_as <- factor(dfOL$registered_as,levels=c("fruitbody & otu","fruitbody only"))
+
+plotA <- ggplot(dfOL,aes(location,weight=score,fill=registered_as)) + geom_bar() + xlab("compartment/dataset") + ylab("number of species")+ scale_fill_manual(values=c("gray21","gray51"))
+ggsave(here::here("plots","S_Fig5.pdf"),plotA,width=4, height=4)
+
+dfOL
+#   score Registered_with location
+# 1   443 fruitbody & otu     soil
+# 2   624  fruitbody only     soil
+# 3   104 fruitbody & otu non-soil
+# 4   580  fruitbody only non-soil
+
+(443+624) # 1067 number of soil fruitbodies
+444/(443+624) # 42% also recorded as OTU
+
+104+580 # 684 non-soil fruitbodies
+104/684 # 42% also recorded as OTU
+
+```
+
+#### Species-name overlap across the 130 sites ####
+```{r,eval=F, echo=F}
+tabS <- read.csv(read_otu[4],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tabNS<- read.csv(read_otu[7],sep='\t',header=T,as.is=TRUE,row.names = 1) #read table
+tabD <- read.csv(read_otu[10],sep='\t',header=T,as.is=TRUE,row.names = 1)
+
+overlapS <- vector()
+overlapNS <- vector()
+for (smp in 1:length(samples)){
+  cur_specS <- tabS$species[which(tabS[,smp]>0)]
+  cur_specNS <- tabNS$species[which(tabS[,smp]>0)]
+  cur_specD <- tabD$species[which(tabD[,smp]>0)]
+  overlapS[smp] <- length(intersect(cur_specS,cur_specD))/length(cur_specS)
+  overlapNS[smp] <- length(intersect(cur_specNS,cur_specD))/length(cur_specS)
+}
+
+mean(overlapS, na.rm = T)*100
+mean(overlapNS, na.rm = T)*100
+
+#> mean(overlapS, na.rm = T)*100
+#[1] 4.680952
+#> mean(overlapNS, na.rm = T)*100
+#[1] 0.4236263
+
+```
+
+#### evaluation of blanks/controls #####
+```{r}
+n_tab <- readRDS(here::here("data","edna_tab.RDS"))
+
+#make a table of otus in controls and blanks
+control_tab <- n_tab %>% select(-samples)
+controls <- grepl("Bla",names(control_tab))|grepl("neg",names(control_tab))
+control_tab <- control_tab[rowSums(control_tab[,controls])>1,]
+
+nrow(control_tab) # [1] 9 (number of OTUs)
+control_tab$species
+# [1] "Inocybe_sp"              "Mycosphaerella_tassiana" "Phialemoniopsis_curvata"
+# [4] "Malassezia_globosa"      "Lecanicillium_muscarium" "Malassezia_sympodialis" 
+# [7] "Tremellomycetes_sp"      "Malassezia_restricta"    "Sarocladium_kiliense"   
+
+rowSums(control_tab[,controls]>0) # how many otus pr sample
+  # 71   73  251 2128 2528 2596 4264 5120 5622 
+  #  1    1    2    1    6    2    2    2    1 
+
+colSums(control_tab[,controls]>0) # how many otus pr sample
+# Blank1_5_    Blank2 Blank2_3_ Blank2_4_ Blank3_2_ Blank4_3_    neg_15    neg_17     neg_2 
+#         1         1         2         1         1         1         1         1         4 
+#     neg_6     neg_9 
+#         4         1 
+
+potential_contaminants <- control_tab$OTU_ID
+contaminats_in_samples <- n_tab[which(n_tab$OTU_ID %in% potential_contaminants), samples]
+n_tab$species[which(n_tab$OTU_ID %in% potential_contaminants)]
+rowSums(contaminats_in_samples>0)
+# [1] "Inocybe_sp"              "Mycosphaerella_tassiana" "Phialemoniopsis_curvata"
+# [4] "Malassezia_globosa"      "Lecanicillium_muscarium" "Malassezia_sympodialis" 
+# [7] "Tremellomycetes_sp"      "Malassezia_restricta"    "Sarocladium_kiliense"   
+# > rowSums(contaminats_in_samples>0)
+#   71   73  251 2128 2528 2596 4264 5120 5622 
+#    3  117   34    1   16    1   19    3    0 
+```
+
+#### evaluation of sequencing data and singletons ####
+```{r}
+n_tab <- readRDS(here::here("data","edna_tab.RDS"))
+
+#make a table of otus in controls and blanks
+otu_tab <- n_tab %>% select(samples)
+sum(otu_tab) # [1] 7813551 - number of paired reads (after taxonomic assignment and filtering)
+nrow(otu_tab) # [1] 10490 - number of OTUs
+sum(otu_tab == 1) # [1] 44 (total number of singleton OTUs)
+table(sort(colSums(otu_tab == 1)))
+#  0  1  2  3 
+# 95 28  5  2 
+```
+
+#### evaluation of lichenized #####
+```{r}
+n_tab <- readRDS(here::here("data","edna_tab.RDS"))
+
+lec_tab <- n_tab[n_tab$class == "Lecanoromycetes",]
+
+sum(lec_tab[,1:130])/sum(n_tab[,1:130])*100 # 0.51 % lecanoromycetes
+nrow(lec_tab) # 132
+nrow(lec_tab)/nrow(n_tab) # 1.26%
+sum(lec_tab$pident >= 98.5) # 41
+lec_tab$species[lec_tab$pident >= 98.5]
+# list of names transferred to manuscript 
+colSums(lec_tab>0)
+
+sort(rowSums(lec_tab[lec_tab$pident >= 98.5,][,1:130]>0))
+
+site_lic_richness <- (colSums(lec_tab[lec_tab$pident >= 98.5,][,1:130]>0))
+sum(lec_tab[lec_tab$pident >= 98.5,][,1:130]>0) # 89 observations
+mean(site_lic_richness) # 0.684
+min(site_lic_richness) # 0
+max(site_lic_richness) # 8
+
+write.table(lec_tab, here::here("tables","Lecanoromycetes.txt"), sep="\t",row.names=FALSE,quote=FALSE)
+```
+
+#### rarefaction effect ####
+```{r}
+n_tab <- readRDS(here::here("data","edna_tab.RDS"))
+n_tab1 <- n_tab[,samples]
+tableR <- as.data.frame(t(rrarefy(t(n_tab1),10000)))
+
+n_tab1[n_tab1>1] <- 1
+tableR[tableR>1] <- 1
+
+df_rare <- data.frame(non_rarefied=colSums(n_tab1), rarefied=colSums(tableR))
+ formula <- y ~ x
+
+rarefy_effect <- ggplot(df_rare,aes(non_rarefied,rarefied)) + geom_point(pch=21) +
+ geom_abline(linetype=2, size=0.2) +
+          geom_smooth(method="lm", se= F, size = 0.5, linetype=1, color = "black") +
+  stat_poly_eq(geom = "label", alpha = 0.5,
+               aes(label = paste(..eq.label..)),
+               formula = formula, label.x.npc = "left", label.y.npc = 0.85,
+               parse = TRUE, size = 2, label.size = NA) +
+        theme(panel.grid.major = element_blank(),
+        text=element_text(size=7),axis.text = element_text(colour="black"), panel.border = element_blank(), axis.line = element_line(colour = 'black', size = 0.25)) + stat_cor(method = "spearman", size =2)
+
+ggsave(here::here("plots","S_Fig6.pdf"),rarefy_effect,width=4, height=4)
+
+```

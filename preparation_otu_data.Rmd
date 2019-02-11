@@ -1,0 +1,258 @@
+---
+title: "preparation of otu data"
+author: "Tobias G Frøslev"
+date: "10/8/2017"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+#### environment ####
+```{r,eval=FALSE}
+library(here)
+library(lulu)
+library(dplyr)
+library(readr)
+library(stringr)
+
+source(here::here("R","dereplicate.r"))
+
+
+library(xlsx)
+library(ggplot2)
+```
+
+
+
+#### lulu ####
+```{r,eval=FALSE}
+#read otu tab and matchlist and perform lulu on the data
+otutab <- read.csv(here::here("data","all.otutab.txt"),sep='\t',header=T,row.names = 1, as.is=TRUE)
+matchlist <-  read.csv(here::here("data","otu.matchlist"),sep='\t',header=F,as.is=TRUE)
+lulified_tab <- lulu(otutab,matchlist, minimum_match = 84, minimum_relative_cooccurence = 1)
+
+saveRDS(lulified_tab,here::here("data","lulified_tab.RDS"))
+
+```
+
+#### dereplicate ####
+```{r}
+#collapse the three replicates for each sample
+samplelist <- read.csv(here::here("data","sample_info.txt"), sep="\t", header=TRUE, as.is = TRUE)
+derep_tab <- dereplicate(otutab, samplelist)
+
+saveRDS(derep_tab,here::here("data","derep_tab.RDS"))
+```
+
+#### make reannotation table for unite repseqs ####
+```{r}
+#Format full UNITE+INSD data
+full_data <- read.csv(here::here("data","UNITE_public_22.01.2019_only_SH.txt"),sep='|',header=F,as.is=TRUE, stringsAsFactors = F)
+names(full_data) <- c("accession","taxonomy","SH")
+full_data$taxonomy <- gsub(".__","",full_data$taxonomy)
+full_data2 <- cbind(full_data,data.frame(str_split(gsub(".__","",full_data$taxonomy),";", 7, simplify = T), stringsAsFactors = F))
+names(full_data2)[4:10] <- c("kingdom","phylum","class","order","family","genus","species")
+
+#format SH data
+sh_headers <- read.csv(here::here("data","headers_sh_general_release_dynamic_s_22.01.2019.fasta.txt"),sep='|',header=F,as.is=TRUE, stringsAsFactors = F)
+names(sh_headers) <- c("header","accession","SH","dataset","taxonomy")
+sh_headers$taxonomy <- gsub(".__","",sh_headers$taxonomy)
+sh_headers <- cbind(sh_headers,data.frame(str_split(gsub(".__","",sh_headers$taxonomy),";", 7, simplify = T), stringsAsFactors = F))
+names(sh_headers)[6:12] <- c("kingdom","phylum","class","order","family","genus","species")
+
+#select most commonly used name for each SH in full data
+topslice_full <- full_data2 %>% filter(!grepl("_sp$",species)) %>% group_by(SH) %>% mutate(total = n()) %>% ungroup() %>% group_by_at(vars(-accession)) %>% summarise(count = n()) %>% group_by(SH) %>% slice(which.max(count))
+
+#combine with SH data and keep only reannotations that are different and in a count above 1, and not a refseq
+new_names <- left_join(topslice_full, sh_headers[,c(3,4,12)] , by = "SH") %>% filter(species.x != species.y | is.na(species.y), dataset != "refs", count > 1)
+
+saveRDS(new_names, here::here("data", "unite_reannotation.RDS"))
+```
+
+#### get current svampeatlas name for all UNITE species inkluding reannotated SHs ####
+```{r}
+#takes some time
+
+# extract sh headers from UNITE #
+# get headers of sequences with exact species names
+# grep ">" sh_general_release_dynamic_s_22.01.2019.fasta | awk -F"s__" '{print $2}' | grep -v "_sp$" > speciesnames_sh_general_release_dynamic_s_22.01.2019.txt
+
+source(here::here("R","translate_taxonomy.R")) # can be done with this script, but often it stops so here it is done as part of the inline script.
+
+unite2019 <- read.table(here::here("data","speciesnames_sh_general_release_dynamic_s_22.01.2019.txt"),sep=',',header=F,as.is=TRUE)
+new_names <- readRDS(here::here("data", "unite_reannotation.RDS")) # mapping file
+
+uniq_unite_names <- names(table(c(unite2019$V1, new_names$species.x)))
+
+#check all species names against current taxonomy on svampeatlas (svampe.databasen.org)
+#source(here::here("R","translate_taxonomy.R")) # can be done with this script, but often it stops so here it is done as part of the inline script.
+namesN <- gsub("_"," ",uniq_unite_names)
+startpoint <- 1005
+ require(httr)
+ require(jsonlite)
+ require(lubridate)
+ new_name <- vector()
+ taxonid <- vector()
+ processedX <- vector()
+ url  <- "https://svampe.databasen.org/"
+ startpoint <- 1227
+ for (name in startpoint:length(namesN)){
+  print(paste0(name," : ",namesN[name]))
+  searchpattern <- gsub(" ","+",namesN[name])
+  path <- paste0("api/taxa?_order=[[%22FullName%22]]&include=[{%22model%22:%22TaxonRedListData%22,%22as%22:%22redlistdata%22,%22required%22:false,%22attributes%22:[%22status%22],%22where%22:%22{\\%22year\\%22:2009}%22},{%22model%22:%22Taxon%22,%22as%22:%22acceptedTaxon%22},{%22model%22:%22TaxonAttributes%22,%22as%22:%22attributes%22,%22attributes%22:[%22PresentInDK%22]},{%22model%22:%22TaxonDKnames%22,%22as%22:%22Vernacularname_DK%22,%22required%22:false},{%22model%22:%22TaxonStatistics%22,%22as%22:%22Statistics%22,%22required%22:false},{%22model%22:%22TaxonImages%22,%22as%22:%22Images%22,%22required%22:false}]&limit=100&offset=0&where={%22FullName%22:%22",searchpattern,"%22}")
+  raw.result <- GET(url = url, path = path)
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  processedX[name] <- "converted"
+  if(length(this.content) > 0){
+   if (namesN[name] %in% this.content$acceptedTaxon$FullName){indexX = which(this.content$acceptedTaxon$FullName == namesN[name])[1]} else {indexX <- 1}
+   new_name[name] <- this.content$acceptedTaxon$FullName[indexX]
+   taxonid[name] <- this.content$acceptedTaxon$`_id`[indexX]
+   if(new_name[name] == namesN[name]){
+    print("same name")
+    processedX[name] <- "unchanged"
+   } else{
+    print(paste0("translated to: ",new_name[name]))
+   }
+  } else {
+   new_name[name] <- namesN[name]
+   taxonid[name] <- NA
+   processedX[name] <- "no_match"
+   print(paste0("no match"))
+  }
+ }
+ 
+namesN <- gsub(" ","_",namesN)
+new_name <- gsub(" ","_",new_name)
+old_genus <- str_split_fixed(namesN, "_", 2)[,1]
+new_genus <- str_split_fixed(new_name, "_", 2)[,1]
+dfx <- data.frame(old_name=namesN, new_name=new_name, old_genus=old_genus, new_genus=new_genus, taxonid=taxonid, action=processedX, stringsAsFactors =F)
+saveRDS(dfx,here::here("data","Unite2019_names_translated_to_SvampeatlasRDS"))
+```
+
+#### adjust annotation ####
+```{r}
+#split taxon string into elements
+edna_tax <- read_delim(here::here("data","blasthits.txt"),col_names = F, delim = "\t")
+names(edna_tax) <- c("OTU_ID","pident","SH_header")
+edna_tax$SH <- str_split_fixed(edna_tax$SH_header, "\\|", 4)[,3]
+tax_string <- str_split_fixed(edna_tax$SH_header, "\\|", 5)[,5]
+edna_tax$kingdom <- gsub("k__","",str_split_fixed(tax_string, ";", 7)[,1])
+edna_tax$phylum <- gsub("p__","",str_split_fixed(tax_string, ";", 7)[,2])
+edna_tax$class <- gsub("c__","",str_split_fixed(tax_string, ";", 7)[,3])
+edna_tax$order <- gsub("o__","",str_split_fixed(tax_string, ";", 7)[,4])
+edna_tax$family <- gsub("f__","",str_split_fixed(tax_string, ";", 7)[,5])
+edna_tax$genus <- gsub("g__","",str_split_fixed(tax_string, ";", 7)[,6])
+edna_tax$species <- gsub("s__","",str_split_fixed(tax_string, ";", 7)[,7])
+edna_tax$unite <- "original"
+
+#reannotate unite repseqs based on most common names in each sh
+new_names <- readRDS(here::here("data", "unite_reannotation.RDS")) # mapping file
+newc <- c("kingdom", "phylum", "class", "order", "family", "genus", "species.x") # which columns to import
+oldc <- c("kingdom", "phylum", "class", "order", "family", "genus", "species", "unite")# which columns to replace
+sh_to_change <- intersect(new_names$SH, edna_tax$SH) # which entries in the mapping file exists in the table
+for (i in 1:length(sh_to_change)){
+ edna_tax[which(edna_tax$SH == sh_to_change[i]),oldc] <- c(new_names[which(new_names$SH == sh_to_change[i]),newc],"adjusted") # change names SH by SH
+}
+
+#reannotate to current Svampeatlas use
+unite_conversion <- readRDS(here::here("data","Unite2019_names_translated_to_SvampeatlasRDS"))
+names_to_change <- unite_conversion %>% filter(action == "converted") %>% distinct() # which names have changed
+tax_tabx <- left_join(edna_tax, names_to_change, by = c("species" = "old_name"))
+tax_tabx$species[tax_tabx$action == "converted" & !is.na(tax_tabx$action)] <-  tax_tabx$new_name[tax_tabx$action == "converted" & !is.na(tax_tabx$action)]
+tax_tabx$genus[tax_tabx$action == "converted" & !is.na(tax_tabx$action)] <-  tax_tabx$new_genus[tax_tabx$action == "converted" & !is.na(tax_tabx$action)]
+edna_tax <- tax_tabx[,1:12]
+
+#adjust taxonomy according to match level
+cutoff_index <- which(edna_tax$pident < 75 & edna_tax$phylum != "unidentified")
+reclassify_index <- c("class","order","family","genus")
+edna_tax[cutoff_index,reclassify_index] <- "unidentified"
+edna_tax$species[cutoff_index] <- paste0(edna_tax$phylum[cutoff_index], "_sp")
+
+cutoff_index <- which(edna_tax$pident < 80 & edna_tax$pident >= 75 & edna_tax$class != "unidentified")
+reclassify_index <- c("order","family","genus")
+edna_tax[cutoff_index,reclassify_index] <- "unidentified"
+edna_tax$species[cutoff_index] <- paste0(edna_tax$class[cutoff_index], "_sp")
+
+cutoff_index <- which(edna_tax$pident < 85 & edna_tax$pident >= 80 & edna_tax$order != "unidentified")
+reclassify_index <- c("family","genus")
+edna_tax[cutoff_index,reclassify_index] <- "unidentified"
+edna_tax$species[cutoff_index] <- paste0(edna_tax$order[cutoff_index],"_sp")
+
+cutoff_index <- which(edna_tax$pident < 90& edna_tax$pident >= 85 & edna_tax$family != "unidentified")
+reclassify_index <- c("genus")
+edna_tax$genus[cutoff_index] <- "unidentified"
+edna_tax$species[cutoff_index] <- paste0(edna_tax$family[cutoff_index], "_sp")
+
+cutoff_index <- which(edna_tax$pident < 98 & edna_tax$pident >= 90 & edna_tax$genus != "unidentified")
+#cutoff_index <- which(edna_tax$pident < 98 & edna_tax$pident >= 90)
+edna_tax$species[cutoff_index] <- paste0(edna_tax$genus[cutoff_index], "_sp")
+edna_tax$OTU_ID <- gsub("otu=","",str_split_fixed(edna_tax$OTU_ID, ";", 3)[,2]) 
+
+#adjust classification to match rate: 98, 90, 85, 80, and 75% sequence identity as a criterion for assigning OTUs with names of a species, genus, family, order, or class, respectively.
+for(i in 1:nrow(edna_tax)){
+ if (edna_tax[i,"genus"] == "unidentified"){
+  if (edna_tax[i,"family"] != "unidentified"){
+   edna_tax[i,"species"] <- paste0(edna_tax[i,"family"],"_sp")
+  } else if (edna_tax[i,"order"] != "unidentified"){
+   edna_tax[i,"species"] <- paste0(edna_tax[i,"order"],"_sp")
+   } else if (edna_tax[i,"class"] != "unidentified"){
+   edna_tax[i,"species"] <- paste0(edna_tax[i,"class"],"_sp")
+   } else if (edna_tax[i,"phylum"] != "unidentified"){
+   edna_tax[i,"species"] <- paste0(edna_tax[i,"phylum"],"_sp")
+  } else if (edna_tax[i,"kingdom"] != "unidentified"){
+   edna_tax[i,"species"] <- paste0(edna_tax[i,"kingdom"],"_sp")
+ }
+ }
+}
+
+# correcting an annotation error of UNITE encountered during analyses.
+
+edna_tax[edna_tax$SH == "SH1517431.08FU", c("order","family","genus","species")] <- c("Polyporales", "Fomitopsidaceae","Buglossoporus", "Buglossoporus_quercinus")
+
+saveRDS(edna_tax,here::here("data","adjusted_tax.RDS"))
+```
+
+
+#### focus tables on fungal otus ####
+```{r}
+lulified_tab <- readRDS(here::here("data","lulified_tab.RDS"))
+derep_tab <- readRDS(here::here("data","derep_tab.RDS"))
+tax_tab <- readRDS(here::here("data","adjusted_tax.RDS"))
+
+pa_tab <- derep_tab
+pa_tab[pa_tab>1] <- 1 # reduce to presence/absence table
+
+tax_tab2 <- tax_tab %>% group_by(species) %>% mutate(redundancy = n()) # add count of each species name
+
+lulified_to_keep <- tax_tab2$OTU_ID[tax_tab2$OTU_ID %in% lulified_tab$discarded_otus & tax_tab2$redundancy == 1 & tax_tab2$pident > 98] # which lulu-flagged otus should be kept (high match, unique name, non-redundant)
+discard <- setdiff(lulified_tab$discarded_otus,lulified_to_keep) # which flagged errors should be removed
+
+tax_tab3 <- tax_tab2[!tax_tab2$OTU_ID %in% discard,c(1,2,4,5,6,7,8,9,10,11,12)] # focus taxonomy on otus to keep
+
+otu_tab <- derep_tab[tax_tab3$OTU_ID,] # focus otu_tab on otus to keep
+otu_tab$OTU_ID <- row.names(otu_tab)
+
+otu_tab_pa <- pa_tab[tax_tab3$OTU_ID,] # focus otu_tab on otus to keep
+otu_tab_pa$OTU_ID <- row.names(otu_tab_pa)
+
+edna_tab <- left_join(otu_tab, tax_tab3, by = "OTU_ID") # add taxonomy
+samples_otu_tab <- edna_tab[,-(131:141)]
+controls_otu_tab <- edna_tab[,-(1:130)]
+
+edna_tab_pa <- left_join(otu_tab_pa, tax_tab3, by = "OTU_ID") # add taxonomy
+samples_otu_tab_pa <- edna_tab_pa[,-(131:141)]
+controls_otu_tab_pa <- edna_tab_pa[,-(1:130)]
+
+saveRDS(tax_tab3,here::here("data","focussed_adjusted_tax.RDS"))
+saveRDS(otu_tab,here::here("data","focussed_otu_tab.RDS"))
+saveRDS(otu_tab_pa,here::here("data","focussed_pa_otu_tab.RDS"))
+saveRDS(edna_tab,here::here("data","edna_tab.RDS"))
+saveRDS(edna_tab_pa,here::here("data","pa_edna_tab.RDS"))
+saveRDS(samples_otu_tab,here::here("data","samples_focussed_otu_tab.RDS"))
+saveRDS(controls_otu_tab,here::here("data","controls_focussed_otu_tab.RDS"))
+saveRDS(samples_otu_tab_pa,here::here("data","samples_focussed_pa_otu_tab.RDS"))
+saveRDS(controls_otu_tab_pa,here::here("data","controls_focussed_pa_otu_tab.RDS"))
+```
+

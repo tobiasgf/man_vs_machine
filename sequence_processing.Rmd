@@ -1,0 +1,73 @@
+---
+title: "sequence processing"
+author: "Tobias G Frøslev"
+date: "4/2/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# below steps are initial sequence related analyses done on a linux server
+
+#### get sequencing files ####
+the fastq files from the two MiSeq runs are deposited here:
+
+#### demultiplexing ####
+The 12 fastq files from the two MiSeq runs were demultiplexed with a custom demultiplexing script: DADA2_demultiplex.sh    
+demultiplexing used the following tag files:  
+dada2_taglist2_BW_Fungi_R1A.txt  
+dada2_taglist2_BW_Fungi_R1B.txt  
+dada2_taglist2_BW_Fungi_R2A.txt  
+dada2_taglist2_BW_Fungi_R2B.txt  
+dada2_taglist2_BW_Fungi_R3A.txt  
+dada2_taglist2_BW_Fungi_R3B.txt  
+batchfileDADA2.list  
+```{r}
+# bash DADA2_demultiplex.sh
+```
+  
+#### DADA2 ####
+Sequences were processed with DADA2 using a custom script: dada2_sickle_v2.r   
+Sequences were extracted samples wise as part of this script. The further processing was done with the sequences where bismeras (chimeras sensu DADA2) were removed.  
+```{r}
+# R < dada2_sickle_v2.r --nosave &>log.txt
+```
+
+#### ITS2 extraction ####
+remnants of 5.8S and 28S ribosomal genes were removed with ITSx implemented in a script that parallelizes the function over several cores: itsx_fungi_parallel.sh    
+as part of this script sequences were dereplicated and annotated with sha1 hashes as headers. The script was run on the extracted files in the directory 'DADA2_extracted_samples_nochim'
+```{r}
+# bash itsx_fungi_parallel.sh
+```
+
+####  clustering ####
+The sample wise ITS2 sequences (in the 'itsx_cut' directory) were then clustered with vsearch:
+first annotating the sequences with sample and otu ids  
+```{r}
+#   mkdir out
+#   for f in *.fas; do awk '/>/{sub(">","&sample="FILENAME";otu=");sub(/\.fas/,x)}1' $f > out/$f ; done
+#   cat *fas >> all_otus_concatenated.fas
+#   vsearch --cluster_size all_otus_concatenated.fas --id 0.985 --strand plus --sizein --sizeout --fasta_width 0 --uc all.clustered.uc  --centroids all.otus.fasta --otutabout all.otutab.txt
+```
+
+#### taxonomy ####
+assigning taxonomy by blasting against database of UNITE v8 species hypothesis file:  
+```{r}
+# makeblastdb -in sh_general_release_dynamic_s_22.01.2019_tgf.fasta -dbtype nucl
+# blastn -db sh_general_release_dynamic_s_22.01.2019_tgf.fasta -num_threads 30 -max_target_seqs 1 -outfmt '6 qseqid pident sseqid' -out blasthits.txt -qcov_hsp_perc 80 -perc_identity 30 -query all.otus.fasta
+```
+
+#### lulu matchlist ####
+```{r}
+#format sequences to only contain sequence ids  
+#  sed 's/>.*otu=/>/' all.otus.fasta | sed 's/;size.*$//' > otu_clean_headers.fasta
+#### make blast database ####
+# makeblastdb -in otu_clean_headers.fasta -dbtype nucl
+# blastn -db otu_clean_headers.fasta -num_threads 50 -outfmt '6 qseqid sseqid pident' -out otu.matchlist -qcov_hsp_perc 80 -perc_identity 84 -query otu_clean_headers.fasta
+```
+
+#### top 50 fungi ####
+assigning taxonomy by blasting against database of UNITE v8 species hypothesis file:  
+```{r}
+# makeblastdb -in top50_release_01.12.2017.fasta -dbtype nucl
+# blastn -db top50_release_01.12.2017.fasta -num_threads 30 -max_target_seqs 1 -outfmt '6 qseqid pident sseqid' -out top50hits_blast.txt -qcov_hsp_perc 95 -perc_identity 97 -query all.otus.fasta
+```

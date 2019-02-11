@@ -1,0 +1,131 @@
+---
+title: "prepare survey datasets"
+author: "Tobias G Frøslev"
+date: "5/2/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(readr)
+```
+
+#### assign species to soil-fungi or non-soilfungi ####
+```{r}
+obs_tab <- read_tsv(here::here("data","Biowide_fungi_obs_matrix3.txt"))
+
+g_act <- read.csv(here::here("data","genus_actions.txt"),sep="\t",stringsAsFactors = F)
+names(g_act) <- c("genus","g_nonsoil")
+g_act <- g_act %>% filter(g_nonsoil == "x")
+
+sp_act <- read.csv(here::here("data","species_actions.txt"),sep="\t",stringsAsFactors = F)
+names(sp_act) <- c("species","s_nonsoil")
+hjk <- str_split_fixed(sp_act$species, "_", 3)
+sp_act$species <- paste0(hjk[,1],"_",hjk[,2])
+sp_act <- sp_act %>% filter(s_nonsoil == "x")
+
+obs_g <- left_join(obs_tab, g_act, by = "genus")
+obs_g_s <- left_join(obs_g, sp_act, by = "species")
+obs_g_s$soil <- "y"
+obs_g_s$soil[obs_g_s$g_nonsoil == "x"] <- "n"
+obs_g_s$soil[obs_g_s$s_nonsoil == "x"] <- "n"
+
+obs_tab <- obs_g_s %>% select(-g_nonsoil, -s_nonsoil)
+
+saveRDS(obs_tab,here::here("data","soilclassified_obs.RDS"))
+
+```
+
+#### get current svampeatlas name for all UNITE species ####
+```{r}
+#takes some time
+library(httr)
+library(jsonlite)
+library(lubridate)
+
+obs_tab <- readRDS(here::here("data","soilclassified_obs.RDS"))
+
+#check all species names against current taxonomy on svampeatlas (svampe.databasen.org)
+namesN <- gsub("_"," ",obs_tab$species)
+new_name <- vector()
+taxonid <- vector()
+processedX <- vector()
+url  <- "https://svampe.databasen.org/"
+for (name in 1:length(namesN)){
+ print(paste0(name," of ",length(namesN)," : ",namesN[name]))
+ searchpattern <- gsub(" ","+",namesN[name])
+ pathX <- paste0("api/taxa?_order=[[%22FullName%22]]&include=[{%22model%22:%22TaxonRedListData%22,%22as%22:%22redlistdata%22,%22required%22:false,%22attributes%22:[%22status%22],%22where%22:%22{\\%22year\\%22:2009}%22},{%22model%22:%22Taxon%22,%22as%22:%22acceptedTaxon%22},{%22model%22:%22TaxonAttributes%22,%22as%22:%22attributes%22,%22attributes%22:[%22PresentInDK%22]},{%22model%22:%22TaxonDKnames%22,%22as%22:%22Vernacularname_DK%22,%22required%22:false},{%22model%22:%22TaxonStatistics%22,%22as%22:%22Statistics%22,%22required%22:false},{%22model%22:%22TaxonImages%22,%22as%22:%22Images%22,%22required%22:false}]&limit=100&offset=0&where={%22FullName%22:%22",searchpattern,"%22}")
+ raw.result <- GET(url = url, path = pathX)
+ this.raw.content <- rawToChar(raw.result$content)
+ this.content <- fromJSON(this.raw.content)
+ processedX[name] <- "converted"
+ if(length(this.content) > 0){
+  if (namesN[name] %in% this.content$acceptedTaxon$FullName){indexX = which(this.content$acceptedTaxon$FullName == namesN[name])[1]} else {indexX <- 1}
+  new_name[name] <- this.content$acceptedTaxon$FullName[indexX]
+  taxonid[name] <- this.content$acceptedTaxon$`_id`[indexX]
+  if(new_name[name] == namesN[name]){
+   print("same name")
+   processedX[name] <- "unchanged"
+  } else{
+   print(paste0("translated to: ",new_name[name]))
+  }
+ } else {
+  new_name[name] <- ""
+  taxonid[name] <- NA
+  processedX[name] <- "no_match"
+  print(paste0("no match"))
+ }
+}
+
+namesN <- gsub(" ","_",namesN)
+new_name <- gsub(" ","_",new_name)
+old_genus <- str_split_fixed(namesN, "_", 2)[,1]
+new_genus <- str_split_fixed(new_name, "_", 2)[,1]
+dfx <- data.frame(old_name=namesN, new_name=new_name, old_genus=old_genus, new_genus=new_genus, taxonid=taxonid, action=processedX, stringsAsFactors =F)
+
+names_to_change <- dfx %>% filter(action == "converted") %>% distinct() # which names have changed
+
+obs_tabx <- left_join(obs_tab, names_to_change, by = c("species" = "old_name"))
+obs_tabx$species[obs_tabx$action == "converted" & !is.na(obs_tabx$action)] <-  obs_tabx$new_name[obs_tabx$action == "converted" & !is.na(obs_tabx$action)]
+obs_tabx$genus[obs_tabx$action == "converted" & !is.na(obs_tabx$action)] <-  obs_tabx$new_genus[obs_tabx$action == "converted" & !is.na(obs_tabx$action)]
+
+obs_tab <- obs_tabx[,1:134]
+
+saveRDS(obs_tab,here::here("data","tax_adjusted_obs.RDS"))
+```
+
+#### add higher level taxa for survey ####
+```{r}
+# grep ">" sh_general_release_dynamic_s_22.01.2019_tgf.fasta | awk -F"|" '{print $5}' | sed 's/.*k__//' | sed 's/;s__.*//' | sed 's/.__//g' | sort | uniq | grep -v "unidentified$" | grep "Fungi" > genus_classifications_UNITE2019.txt
+
+obs_tab <- readRDS(here::here("data","tax_adjusted_obs.RDS"))
+
+UNITE_genera <- read.csv(here::here("data","genus_classifications_UNITE2019.txt"),sep=";",stringsAsFactors = F)
+names(UNITE_genera) <- c("kingdom","phylum","class","order","family","genus")
+svampeatlas_genera <- read.csv(here::here("data","genussystematics_TGF.txt"),sep="\t",stringsAsFactors = F) # a few genera did not appear in UNITE and classification was fetched from svampeatlas.dk
+svampeatlas_genera <- svampeatlas_genera %>% filter(!genus %in% UNITE_genera$genus)
+
+classified <- rbind(UNITE_genera, svampeatlas_genera[,c(1,2,4,6,7,8)])
+classified <- classified %>% filter(!(family == "Cenangiaceae" & genus == "Cenangiopsis"), !(family == "Cryptococcaceae" & genus == "Cryptococcus"), !(family == "Pyronemataceae" & genus == "Aleurina"))
+
+obs_tab$genus <- str_split_fixed(obs_tab$species, "_", 2)[,1]
+
+obs_tab2 <- left_join(obs_tab,classified, by = "genus")
+
+write.table(obs_tab2, here::here("data","Biowide_classified_fungi_obs_matrix3.txt"), sep="\t",quote=FALSE, row.names = F)
+
+```
+
+#### produce soil and nonsoil survey datasets ####
+```{r}
+sur_tab <- read.csv(here::here("data","Biowide_classified_fungi_obs_matrix3.txt"),sep="\t",stringsAsFactors = F)
+
+filtered_tab <- sur_tab[sur_tab$soil == "y",]
+write.table(filtered_tab, here::here("data","full_soilsurvey_matrix.txt"), sep="\t",quote=FALSE, col.names = NA)
+
+nonsoil_filtered_tab <- sur_tab[sur_tab$soil == "n",]
+write.table(nonsoil_filtered_tab, here::here("data","full_nonsoilsurvey_matrix.txt"), sep="\t",quote=FALSE, col.names = NA)
+
+```
+

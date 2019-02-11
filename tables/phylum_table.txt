@@ -1,0 +1,18 @@
+Phylum	OTU	Fruitbody total	Soil frb.	Non-soil frb.
+Amoebozoa	-	1 (0 %)	1 (0 %)	-
+Ascomycota	4931 (47 %)	347 (20 %)	105 (10 %)	242 (35 %)
+Basidiobolomycota	19 (0 %)	-	-	-
+Basidiomycota	3424 (33 %)	1398 (80 %)	957 (90 %)	441 (64 %)
+Calcarisporiellomycota	1 (0 %)	-	-	-
+Chytridiomycota	237 (2 %)	-	-	-
+Entomophthoromycota	3 (0 %)	-	-	-
+Entorrhizomycota	12 (0 %)	-	-	-
+Glomeromycota	357 (3 %)	3 (0 %)	3 (0 %)	-
+Kickxellomycota	17 (0 %)	-	-	-
+Monoblepharomycota	24 (0 %)	-	-	-
+Mortierellomycota	188 (2 %)	-	-	-
+Mucoromycota	186 (2 %)	2 (0 %)	1 (0 %)	1 (0 %)
+Neocallimastigomycota	14 (0 %)	-	-	-
+Olpidiomycota	34 (0 %)	-	-	-
+Rozellomycota	489 (5 %)	-	-	-
+unidentified	554 (5 %)	-	-	-

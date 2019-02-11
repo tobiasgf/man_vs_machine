@@ -1,0 +1,43 @@
+---
+title: "prepare_focussed_datasets"
+author: "Tobias G Frøslev"
+date: "5/2/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#### produce datasets ####
+```{r}
+#  survey tables
+sur_tab <- read.csv(here::here("data", "Biowide_classified_fungi_obs_matrix3.txt"), sep="\t", stringsAsFactors = F)
+write.table(sur_tab, here::here("data", "ds_survey_full.txt"), sep="\t", quote=FALSE, col.names = NA) # full table
+sur_tab <- sur_tab[sur_tab$class == "Agaricomycetes" & !is.na(sur_tab$class),]
+write.table(sur_tab, here::here("data", "ds_survey_agaricomycetes.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricomycetes table
+sur_tab <- sur_tab[sur_tab$order == "Agaricales" & !is.na(sur_tab$order),]
+write.table(sur_tab, here::here("data", "ds_survey_agaricales.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricales table
+
+# nonsoil survey
+sur_tab <- read.csv(here::here("data", "full_nonsoilsurvey_matrix.txt"),sep="\t",stringsAsFactors = F)
+write.table(sur_tab,here::here("data", "ds_nonsoilsurvey_full.txt"), sep="\t",quote=FALSE, col.names = NA)
+sur_tab <- sur_tab[sur_tab$class == "Agaricomycetes" & !is.na(sur_tab$class),]
+write.table(sur_tab, here::here("data", "ds_nonsoilsurvey_agaricomycetes.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricomycetes table
+sur_tab <- sur_tab[sur_tab$order == "Agaricales" & !is.na(sur_tab$order),]
+write.table(sur_tab, here::here("data", "ds_nonsoilsurvey_agaricales.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricales table
+
+#soil survey
+sur_tab <- read.csv(here::here("data", "full_soilsurvey_matrix.txt"), sep="\t", stringsAsFactors = F)
+write.table(sur_tab, here::here("data", "ds_soilsurvey_full.txt"), sep="\t", quote=FALSE, col.names = NA)
+sur_tab <- sur_tab[sur_tab$class == "Agaricomycetes" & !is.na(sur_tab$class),]
+write.table(sur_tab, here::here("data", "ds_soilsurvey_agaricomycetes.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricomycetes table
+sur_tab <- sur_tab[sur_tab$order == "Agaricales" & !is.na(sur_tab$order),]
+write.table(sur_tab, here::here("data", "ds_soilsurvey_agaricales.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricales table
+
+# otu data 
+sur_tab <- readRDS(here::here("data", "samples_focussed_pa_otu_tab.RDS"))
+write.table(sur_tab,here::here("data","ds_dna_full.txt"), sep="\t",quote=FALSE, col.names = NA)
+sur_tab <- sur_tab[sur_tab$class == "Agaricomycetes" & !is.na(sur_tab$class),]
+write.table(sur_tab, here::here("data", "ds_dna_agaricomycetes.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricomycetes table
+sur_tab <- sur_tab[sur_tab$order == "Agaricales" & !is.na(sur_tab$order),]
+write.table(sur_tab, here::here("data", "ds_dna_agaricales.txt"), sep="\t", quote=FALSE, col.names = NA) # agaricales table
+```

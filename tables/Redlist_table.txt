@@ -1,0 +1,191 @@
+Species	Fruitbody	OTU	soil	refdb	order	class	SH
+Agaricus porphyrizon	1		x		Agaricales	Agaricomycetes	
+Agrocybe firma		1		x	Agaricales	Agaricomycetes	SH1565181.08FU
+Agrocybe vervacti	1		x	x	Agaricales	Agaricomycetes	
+Amanita olivaceogrisea	2	5	x	x	Agaricales	Agaricomycetes	SH1795208.08FU
+Amanita strobiliformis	1		x	x	Agaricales	Agaricomycetes	
+Amyloxenasma pruina	1			x	Amylocorticiales	Agaricomycetes	
+Anomoloma myceliosum	1		x	x	Amylocorticiales	Agaricomycetes	
+Antrodia malicola	1			x	Polyporales	Agaricomycetes	
+Arrhenia epichysium	1		x	x	Agaricales	Agaricomycetes	
+Arrhenia lobata	1	2	x	x	Agaricales	Agaricomycetes	SH1648659.08FU
+Arrhenia onisca	2		x		Agaricales	Agaricomycetes	
+Aurantiporus croceus	1			x	Polyporales	Agaricomycetes	
+Botryobasidium intertextum	1			x	Cantharellales	Agaricomycetes	
+Buglossoporus quercinus	1	1		x	Polyporales	Agaricomycetes	SH1517431.08FU (as Leccinum_aurantiacum)
+Cabalodontia subcretacea	1			x	Polyporales	Agaricomycetes	
+Camarophyllopsis schulzeri	1	3	x	x	Agaricales	Agaricomycetes	SH1566263.08FU
+Camarops tubulina	1			x	Boliniales	Sordariomycetes	
+Ceriporia purpurea	5			x	Polyporales	Agaricomycetes	
+Chromocyphella muscicola	3			x	Agaricales	Agaricomycetes	
+Clavaria flavipes	2	4	x	x	Agaricales	Agaricomycetes	SH1648144.08FU
+Clavaria incarnata	2		x	x	Agaricales	Agaricomycetes	
+Clavaria tenuipes		4		x	Agaricales	Agaricomycetes	SH1512624.08FU
+Clavaria zollingeri		2		x	Agaricales	Agaricomycetes	SH1546999.08FU
+Clavicorona taxophila	1		x		Russulales	Agaricomycetes	
+Clavulinopsis microspora	3		x		Agaricales	Agaricomycetes	
+Conocybe apala		2		x	Agaricales	Agaricomycetes	SH1583113.08FU
+Conocybe dumetorum	4		x	x	Agaricales	Agaricomycetes	
+Cortinarius bergeronii	1	1	x	x	Agaricales	Agaricomycetes	SH1504013.08FU
+Cortinarius catharinae		1		x	Agaricales	Agaricomycetes	SH1571743.08FU
+Cortinarius cotoneus		1		x	Agaricales	Agaricomycetes	SH1503798.08FU
+Cortinarius danicus	1		x		Agaricales	Agaricomycetes	
+Cortinarius langeorum	1		x	x	Agaricales	Agaricomycetes	
+Cortinarius splendens		1		x	Agaricales	Agaricomycetes	SH1503963.08FU
+Cuphophyllus colemannianus	1	1	x	x	Agaricales	Agaricomycetes	SH1173919.08FU
+Cuphophyllus fornicatus	1	1	x	x	Agaricales	Agaricomycetes	SH1181063.08FU
+Cuphophyllus lacmus		4		x	Agaricales	Agaricomycetes	SH1247305.08FU
+Cuphophyllus russocoriaceus	2	1	x	x	Agaricales	Agaricomycetes	SH1617010.08FU (as Hygrocybe_russocoriacea)
+Dermoloma pseudocuneifolium	3		x	x	Agaricales	Agaricomycetes	
+Disciseda bovista	1		x		Agaricales	Agaricomycetes	
+Elaphomyces maculatus		1		x	Eurotiales	Eurotiomycetes	SH1539181.08FU
+Entoloma ameides	1	2	x	x	Agaricales	Agaricomycetes	SH1555042.08FU
+Entoloma anatinum	1	1	x	x	Agaricales	Agaricomycetes	SH1571709.08FU
+Entoloma asprellum		1		x	Agaricales	Agaricomycetes	SH1212384.08FU
+Entoloma atrocoeruleum	2		x	x	Agaricales	Agaricomycetes	
+Entoloma byssisedum	3		x	x	Agaricales	Agaricomycetes	
+Entoloma caesiocinctum	1		x	x	Agaricales	Agaricomycetes	
+Entoloma chalybaeum	5		x	x	Agaricales	Agaricomycetes	
+Entoloma clandestinum	5		x	x	Agaricales	Agaricomycetes	
+Entoloma corvinum	4		x		Agaricales	Agaricomycetes	
+Entoloma cuspidiferum		1		x	Agaricales	Agaricomycetes	SH1569103.08FU
+Entoloma dichroum	1		x		Agaricales	Agaricomycetes	
+Entoloma elodes	7		x		Agaricales	Agaricomycetes	
+Entoloma euchroum	1		x	x	Agaricales	Agaricomycetes	
+Entoloma exile	7		x	x	Agaricales	Agaricomycetes	
+Entoloma formosum	5	1	x	x	Agaricales	Agaricomycetes	SH1555835.08FU
+Entoloma glaucobasis	1	4	x	x	Agaricales	Agaricomycetes	SH1555839.08FU
+Entoloma griseocyaneum	4	1	x	x	Agaricales	Agaricomycetes	SH1519363.08FU
+Entoloma hirtum	1		x		Agaricales	Agaricomycetes	
+Entoloma hispidulum	1		x		Agaricales	Agaricomycetes	
+Entoloma incanum	2	3	x	x	Agaricales	Agaricomycetes	SH1555834.08FU
+Entoloma infula	3	1	x	x	Agaricales	Agaricomycetes	SH1569075.08FU
+Entoloma lampropus		1		x	Agaricales	Agaricomycetes	SH1560951.08FU
+Entoloma lepidissimum	1		x	x	Agaricales	Agaricomycetes	
+Entoloma lividocyanulum	1		x		Agaricales	Agaricomycetes	
+Entoloma mougeotii	2	2	x	x	Agaricales	Agaricomycetes	SH1611640.08FU
+Entoloma neglectum		1		x	Agaricales	Agaricomycetes	SH1569074.08FU
+Entoloma nitidum		10		x	Agaricales	Agaricomycetes	SH1569066.08FU
+Entoloma prunuloides	2	2	x	x	Agaricales	Agaricomycetes	SH1558076.08FU
+Entoloma queletii	1		x		Agaricales	Agaricomycetes	
+Entoloma rhombisporum	2		x		Agaricales	Agaricomycetes	
+Entoloma sodale	1		x		Agaricales	Agaricomycetes	
+Entoloma sphagneti		2		x	Agaricales	Agaricomycetes	SH1611563.08FU
+Entoloma turci		3		x	Agaricales	Agaricomycetes	SH1555836.08FU
+Entoloma xanthochroum	1		x		Agaricales	Agaricomycetes	
+Exidia repanda	1			x	Auriculariales	Agaricomycetes	
+Fibriciellum silvae-ryae	2		x		Trechisporales	Agaricomycetes	
+Flammulaster limulatus	1				Agaricales	Agaricomycetes	
+Ganoderma adspersum		1		x	Polyporales	Agaricomycetes	SH1555633.08FU
+Ganoderma pfeifferi	1			x	Polyporales	Agaricomycetes	
+Geastrum campestre		1		x	Geastrales	Agaricomycetes	SH1619912.08FU
+Geastrum corollinum		1		x	Geastrales	Agaricomycetes	SH1619640.08FU
+Geastrum elegans		1		x	Geastrales	Agaricomycetes	SH1618712.08FU
+Gloeocystidiellum clavuligerum	1				Russulales	Agaricomycetes	
+Gloeoporus pannocinctus	2			x	Polyporales	Agaricomycetes	
+Gloioxanthomyces vitellinus	4	2	x	x	Agaricales	Agaricomycetes	SH1515338.08FU
+Glutinoglossum glutinosum	7	11	x	x	Geoglossales	Geoglossomycetes	SH1515664.08FU
+Gymnopus inodorus	1		x		Agaricales	Agaricomycetes	
+Gyrodon lividus	1		x	x	Boletales	Agaricomycetes	
+Hebeloma fusisporum	2		x		Agaricales	Agaricomycetes	
+Hebeloma odoratissimum		1		x	Agaricales	Agaricomycetes	SH1563863.08FU
+Hebeloma vaccinum	1		x		Agaricales	Agaricomycetes	
+Helvella bicolor		1		x	Pezizales	Pezizomycetes	SH1566868.08FU (as Helvella_albella)
+Hemileucoglossum littorale		1		x	Geoglossales	Geoglossomycetes	SH1563263.08FU
+Heteroradulum deglubens	5			x	Auriculariales	Agaricomycetes	
+Hodophilus foetens	1	1	x	x	Agaricales	Agaricomycetes	SH1555587.08FU
+Hodophilus hymenocephalus	1		x	x	Agaricales	Agaricomycetes	
+Hohenbuehelia atrocoerulea	1			x	Agaricales	Agaricomycetes	
+Hohenbuehelia auriscalpium		1		x	Agaricales	Agaricomycetes	SH1651211.08FU
+Hohenbuehelia mastrucata	2			x	Agaricales	Agaricomycetes	
+Hohenbuehelia petaloides	1		x	x	Agaricales	Agaricomycetes	
+Hygrocybe cantharellus	13	6	x	x	Agaricales	Agaricomycetes	SH1618539.08FU
+Hygrocybe coccineocrenata	2		x		Agaricales	Agaricomycetes	
+Hygrocybe constrictospora		1		x	Agaricales	Agaricomycetes	SH1570757.08FU
+Hygrocybe helobia	3	2	x	x	Agaricales	Agaricomycetes	SH1650212.08FU
+Hygrocybe mucronella	2		x	x	Agaricales	Agaricomycetes	
+Hygrocybe phaeococcinea	1		x	x	Agaricales	Agaricomycetes	
+Hygrocybe punicea		3		x	Agaricales	Agaricomycetes	SH1552042.08FU
+Hygrocybe quieta		1		x	Agaricales	Agaricomycetes	SH1510000.08FU
+Hygrocybe reidii	6	5	x	x	Agaricales	Agaricomycetes	SH1543178.08FU
+Hygrocybe spadicea	1	4	x	x	Agaricales	Agaricomycetes	SH1611673.08FU
+Hygrocybe splendidissima	1	2	x	x	Agaricales	Agaricomycetes	SH1552043.08FU
+Hygrocybe substrangulata	1	1	x	x	Agaricales	Agaricomycetes	SH1571683.08FU
+Hygrocybe turunda		7		x	Agaricales	Agaricomycetes	SH1618544.08FU
+Hygrophorus mesotephrus		1		x	Agaricales	Agaricomycetes	SH1177587.08FU
+Hygrophorus persoonii		1		x	Agaricales	Agaricomycetes	SH1552727.08FU
+Hygrophorus piceae	1		x	x	Agaricales	Agaricomycetes	
+Hygrophorus unicolor	1		x		Agaricales	Agaricomycetes	
+Hymenochaetopsis corrugata	2			x	Hymenochaetales	Agaricomycetes	
+Hyphoderma medioburiense	1			x	Polyporales	Agaricomycetes	
+Inocybe calamistrata	1	2	x	x	Agaricales	Agaricomycetes	SH1638621.08FU
+Inocybe flavella		1		x	Agaricales	Agaricomycetes	SH1158950.08FU
+Inocybe hystrix		1		x	Agaricales	Agaricomycetes	SH1643183.08FU
+Inocybe margaritispora	1		x	x	Agaricales	Agaricomycetes	
+Inocybe pelargonium	1	1	x	x	Agaricales	Agaricomycetes	SH1526383.08FU
+Inocybe praetervisa	2		x	x	Agaricales	Agaricomycetes	
+Inocybe tenebrosa		1		x	Agaricales	Agaricomycetes	SH1632059.08FU
+Ischnoderma resinosum	2			x	Polyporales	Agaricomycetes	
+Jaapia ochroleuca	11	1		x	Jaapiales	Agaricomycetes	SH1571451.08FU
+Kneiffiella alutacea	6				Hymenochaetales	Agaricomycetes	
+Kneiffiella barba-jovis	7			x	Hymenochaetales	Agaricomycetes	
+Kurtia macedonica	2				Corticiales	Agaricomycetes	
+Lactarius trivialis	1	1	x	x	Russulales	Agaricomycetes	SH1519120.08FU
+Lactarius uvidus	1		x	x	Russulales	Agaricomycetes	
+Lentaria byssiseda	2			x	Gomphales	Agaricomycetes	
+Lentinellus flabelliformis	1			x	Russulales	Agaricomycetes	
+Lentinellus ursinus	1			x	Russulales	Agaricomycetes	
+Lepiota ochraceofulva	1		x		Agaricales	Agaricomycetes	
+Lepiota pseudolilacea	2	1	x	x	Agaricales	Agaricomycetes	SH1573125.08FU
+Lepiota tomentella	1		x	x	Agaricales	Agaricomycetes	
+Lindtneria trachyspora	4		x	x	Agaricales	Agaricomycetes	
+Lyophyllum deliberatum		1		x	Agaricales	Agaricomycetes	SH1647761.08FU (as Lyophyllum_infumatum)
+Lyophyllum leucophaeatum		1		x	Agaricales	Agaricomycetes	SH1563376.08FU
+Microglossum olivaceum	1	1	x	x	Helotiales	Leotiomycetes	SH1565391.08FU
+Microglossum viride	2	3	x	x	Helotiales	Leotiomycetes	SH1509658.08FU
+Mitrula paludosa		3		x	Helotiales	Leotiomycetes	SH1517044.08FU
+Mycena concolor	2		x		Agaricales	Agaricomycetes	
+Mycena meliigena	2			x	Agaricales	Agaricomycetes	
+Mycena picta	2		x		Agaricales	Agaricomycetes	
+Nemania carbonacea	2				Xylariales	Sordariomycetes	
+Nemania diffusa	4	1		x	Xylariales	Sordariomycetes	SH1541154.08FU (as Nemania_diffusa)
+Neofavolus suavissimus	2			x	Polyporales	Agaricomycetes	
+Neohygrocybe ingrata		2		x	Agaricales	Agaricomycetes	SH1557694.08FU
+Neohygrocybe nitrata		1		x	Agaricales	Agaricomycetes	SH1521974.08FU
+Peniophorella guttulifera	3			x	Hymenochaetales	Agaricomycetes	
+Phlebia subochracea	1			x	Polyporales	Agaricomycetes	
+Phloeomana clavata	3			x	Agaricales	Agaricomycetes	
+Pholiota henningsii	1		x	x	Agaricales	Agaricomycetes	
+Pholiota tuberculosa	4			x	Agaricales	Agaricomycetes	
+Plicatura crispa	4			x	Agaricales	Agaricomycetes	
+Pluteus exiguus	2			x	Agaricales	Agaricomycetes	
+Pluteus hispidulus	1			x	Agaricales	Agaricomycetes	
+Pluteus insidiosus		1		x	Agaricales	Agaricomycetes	SH1516993.08FU
+Pluteus leoninus	2			x	Agaricales	Agaricomycetes	
+Pluteus pellitus		1		x	Agaricales	Agaricomycetes	SH1604552.08FU
+Poronia punctata	1		x	x	Xylariales	Sordariomycetes	
+Porotheleum fimbriatum	1			x	Agaricales	Agaricomycetes	
+Protodontia subgelatinosa	1			x	Auriculariales	Agaricomycetes	
+Pseudotricholoma metapodium	1	2	x	x	Agaricales	Agaricomycetes	SH1650907.08FU
+Psilocybe turficola	1		x	x	Agaricales	Agaricomycetes	
+Ramariopsis pulchella	4		x	x	Agaricales	Agaricomycetes	
+Rhodophana nitellina	1		x	x	Agaricales	Agaricomycetes	
+Russula albonigra		1		x	Russulales	Agaricomycetes	SH1569600.08FU
+Russula alnetorum	2	4	x	x	Russulales	Agaricomycetes	SH1509017.08FU
+Russula anthracina	1		x	x	Russulales	Agaricomycetes	
+Russula luteotacta		1		x	Russulales	Agaricomycetes	SH1509059.08FU
+Russula pelargonia	3		x	x	Russulales	Agaricomycetes	
+Russula puellula		4		x	Russulales	Agaricomycetes	SH1548384.08FU (as Russula_puellula)
+Russula sanguinea	1		x	x	Russulales	Agaricomycetes	
+Simocybe sumptuosa	2			x	Agaricales	Agaricomycetes	
+Steccherinum subcrinale	1		x		Polyporales	Agaricomycetes	
+Stypella dubia	3				Auriculariales	Agaricomycetes	
+Tomentella lateritia	2	8	x	x	Thelephorales	Agaricomycetes	SH1502315.08FU
+Tomentella pilosa		2		x	Thelephorales	Agaricomycetes	SH1528407.08FU
+Tomentella umbrinospora	1		x	x	Thelephorales	Agaricomycetes	
+Tremellodendropsis tuberosa	1		x	x	Tremellodendropsidales	Agaricomycetes	
+Tricholoma inamoenum	1	1	x	x	Agaricales	Agaricomycetes	SH1647787.08FU
+Tricholoma umbonatum		1		x	Agaricales	Agaricomycetes	SH1155194.08FU
+Tulostoma brumale		1		x	Agaricales	Agaricomycetes	SH1571402.08FU
+Xenasma pulverulentum	4				Polyporales	Agaricomycetes	
+Xerula pudens	1		x	x	Agaricales	Agaricomycetes	

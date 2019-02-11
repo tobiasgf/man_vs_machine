@@ -1,0 +1,182 @@
+Genus	OTU	Fruitbody total	Soil frb.	Non-soil frb.
+Agaricus	8 (1 %)	12 (1 %)	12 (2 %)	-
+Agrocybe	5 (0 %)	4 (0 %)	4 (1 %)	-
+Alboleptonia	2 (0 %)	-	-	-
+Alnicola	3 (0 %)	-	-	-
+Amanita	17 (1 %)	12 (1 %)	12 (2 %)	-
+Ampulloclitocybe	1 (0 %)	1 (0 %)	1 (0 %)	-
+Aphanobasidium	1 (0 %)	3 (0 %)	-	3 (2 %)
+Apioperdon	1 (0 %)	-	-	-
+Armillaria	-	3 (0 %)	3 (0 %)	-
+Arrhenia	3 (0 %)	7 (1 %)	7 (1 %)	-
+Aspropaxillus	1 (0 %)	1 (0 %)	1 (0 %)	-
+Asterophora	-	2 (0 %)	2 (0 %)	-
+Atheniella	4 (0 %)	2 (0 %)	2 (0 %)	-
+Baeospora	-	1 (0 %)	1 (0 %)	-
+Bolbitius	1 (0 %)	2 (0 %)	2 (0 %)	-
+Bovista	2 (0 %)	4 (0 %)	4 (1 %)	-
+Calocybe	1 (0 %)	1 (0 %)	1 (0 %)	-
+Calyptella	3 (0 %)	4 (0 %)	-	4 (3 %)
+Camarophyllopsis	4 (0 %)	2 (0 %)	2 (0 %)	-
+Cellypha	1 (0 %)	1 (0 %)	-	1 (1 %)
+Cephaloscypha	-	1 (0 %)	-	1 (1 %)
+Chlorophyllum	1 (0 %)	2 (0 %)	2 (0 %)	-
+Chondrostereum	-	1 (0 %)	-	1 (1 %)
+Chromocyphella	1 (0 %)	1 (0 %)	-	1 (1 %)
+Clavaria	64 (4 %)	9 (1 %)	9 (1 %)	-
+Clavulinopsis	30 (2 %)	6 (1 %)	6 (1 %)	-
+Clitocella	-	1 (0 %)	1 (0 %)	-
+Clitocybe	7 (0 %)	14 (2 %)	14 (2 %)	-
+Clitocybula	1 (0 %)	-	-	-
+Clitopilus	14 (1 %)	3 (0 %)	3 (0 %)	-
+Collybia	1 (0 %)	3 (0 %)	3 (0 %)	-
+Conocybe	21 (1 %)	21 (2 %)	21 (3 %)	-
+Coprinellus	17 (1 %)	14 (2 %)	14 (2 %)	-
+Coprinopsis	33 (2 %)	31 (4 %)	31 (4 %)	-
+Coprinus	1 (0 %)	-	-	-
+Cortinarius	160 (11 %)	42 (5 %)	42 (6 %)	-
+Crepidotus	9 (1 %)	7 (1 %)	-	7 (5 %)
+Crinipellis	1 (0 %)	1 (0 %)	1 (0 %)	-
+Cristinia	1 (0 %)	3 (0 %)	3 (0 %)	-
+Cuphophyllus	11 (1 %)	7 (1 %)	7 (1 %)	-
+Cyathus	1 (0 %)	1 (0 %)	1 (0 %)	-
+Cyclocybe	1 (0 %)	-	-	-
+Cylindrobasidium	1 (0 %)	1 (0 %)	-	1 (1 %)
+Cystoderma	5 (0 %)	3 (0 %)	3 (0 %)	-
+Cystodermella	-	1 (0 %)	1 (0 %)	-
+Cystolepiota	2 (0 %)	2 (0 %)	2 (0 %)	-
+Deconica	13 (1 %)	9 (1 %)	6 (1 %)	3 (2 %)
+Delicatula	1 (0 %)	1 (0 %)	1 (0 %)	-
+Dermoloma	6 (0 %)	2 (0 %)	2 (0 %)	-
+Disciseda	-	1 (0 %)	1 (0 %)	-
+Entocybe	2 (0 %)	-	-	-
+Entoloma	85 (6 %)	79 (9 %)	79 (11 %)	-
+Eonema	-	1 (0 %)	-	1 (1 %)
+Episphaeria	-	1 (0 %)	-	1 (1 %)
+Fayodia	2 (0 %)	1 (0 %)	1 (0 %)	-
+Fistulina	-	1 (0 %)	-	1 (1 %)
+Flagelloscypha	7 (0 %)	6 (1 %)	-	6 (4 %)
+Flammula	-	2 (0 %)	-	2 (1 %)
+Flammulaster	1 (0 %)	4 (0 %)	3 (0 %)	1 (1 %)
+Flammulina	-	2 (0 %)	-	2 (1 %)
+Galerina	27 (2 %)	27 (3 %)	25 (4 %)	2 (1 %)
+Gliophorus	10 (1 %)	3 (0 %)	3 (0 %)	-
+Globulicium	-	1 (0 %)	-	1 (1 %)
+Gloiocephala	-	1 (0 %)	-	1 (1 %)
+Gloioxanthomyces	1 (0 %)	1 (0 %)	1 (0 %)	-
+Gymnopilus	5 (0 %)	3 (0 %)	2 (0 %)	1 (1 %)
+Gymnopus	7 (0 %)	15 (2 %)	13 (2 %)	2 (1 %)
+Hebeloma	17 (1 %)	18 (2 %)	18 (3 %)	-
+Hemimycena	8 (1 %)	13 (2 %)	5 (1 %)	8 (6 %)
+Henningsomyces	-	2 (0 %)	-	2 (1 %)
+Hodophilus	7 (0 %)	2 (0 %)	2 (0 %)	-
+Hohenbuehelia	1 (0 %)	6 (1 %)	2 (0 %)	4 (3 %)
+Homophron	1 (0 %)	1 (0 %)	1 (0 %)	-
+Hydropus	1 (0 %)	2 (0 %)	2 (0 %)	-
+Hygrocybe	45 (3 %)	18 (2 %)	18 (3 %)	-
+Hygrophorus	8 (1 %)	5 (1 %)	5 (1 %)	-
+Hymenogaster	10 (1 %)	1 (0 %)	1 (0 %)	-
+Hymenopellis	1 (0 %)	1 (0 %)	1 (0 %)	-
+Hyphodontiella	4 (0 %)	1 (0 %)	-	1 (1 %)
+Hypholoma	7 (0 %)	7 (1 %)	5 (1 %)	2 (1 %)
+Hypsizygus	1 (0 %)	-	-	-
+Infundibulicybe	1 (0 %)	1 (0 %)	1 (0 %)	-
+Inocybe	141 (10 %)	41 (5 %)	41 (6 %)	-
+Kuehneromyces	1 (0 %)	1 (0 %)	-	1 (1 %)
+Laccaria	10 (1 %)	6 (1 %)	6 (1 %)	-
+Lachnella	-	2 (0 %)	-	2 (1 %)
+Lacrymaria	3 (0 %)	2 (0 %)	2 (0 %)	-
+Lepiota	5 (0 %)	10 (1 %)	10 (1 %)	-
+Lepista	5 (0 %)	4 (0 %)	4 (1 %)	-
+Leptonia	1 (0 %)	-	-	-
+Leratiomyces	-	1 (0 %)	1 (0 %)	-
+Leucoagaricus	1 (0 %)	2 (0 %)	2 (0 %)	-
+Leucocybe	-	1 (0 %)	1 (0 %)	-
+Lichenomphalia	-	1 (0 %)	1 (0 %)	-
+Lindtneria	6 (0 %)	3 (0 %)	3 (0 %)	-
+Lycoperdon	8 (1 %)	9 (1 %)	9 (1 %)	-
+Lyophyllum	5 (0 %)	2 (0 %)	2 (0 %)	-
+Macrocystidia	1 (0 %)	1 (0 %)	1 (0 %)	-
+Macrolepiota	2 (0 %)	4 (0 %)	4 (1 %)	-
+Macrotyphula	1 (0 %)	2 (0 %)	2 (0 %)	-
+Maireina	-	2 (0 %)	-	2 (1 %)
+Mallocybe	4 (0 %)	-	-	-
+Marasmiellus	2 (0 %)	2 (0 %)	-	2 (1 %)
+Marasmius	5 (0 %)	10 (1 %)	10 (1 %)	-
+Megacollybia	1 (0 %)	1 (0 %)	1 (0 %)	-
+Melanoleuca	4 (0 %)	3 (0 %)	3 (0 %)	-
+Melanophyllum	1 (0 %)	1 (0 %)	1 (0 %)	-
+Merismodes	-	2 (0 %)	-	2 (1 %)
+Merulicium	1 (0 %)	1 (0 %)	1 (0 %)	-
+Mucidula	-	1 (0 %)	-	1 (1 %)
+Mucronella	-	3 (0 %)	-	3 (2 %)
+Mycena	74 (5 %)	69 (8 %)	51 (7 %)	18 (13 %)
+Mycenastrum	1 (0 %)	-	-	-
+Mycenella	6 (0 %)	2 (0 %)	2 (0 %)	-
+Mycetinis	3 (0 %)	3 (0 %)	3 (0 %)	-
+Mycocalia	3 (0 %)	2 (0 %)	2 (0 %)	-
+Myochromella	-	1 (0 %)	1 (0 %)	-
+Naucoria	6 (0 %)	9 (1 %)	9 (1 %)	-
+Nematoctonus	2 (0 %)	-	-	-
+Neohygrocybe	2 (0 %)	-	-	-
+Omphaliaster	-	1 (0 %)	1 (0 %)	-
+Panaeolus	4 (0 %)	8 (1 %)	8 (1 %)	-
+Panellus	-	2 (0 %)	-	2 (1 %)
+Paralepista	1 (0 %)	2 (0 %)	2 (0 %)	-
+Parasola	10 (1 %)	5 (1 %)	5 (1 %)	-
+Phaeocollybia	1 (0 %)	-	-	-
+Phaeolepiota	1 (0 %)	-	-	-
+Phaeomarasmius	-	1 (0 %)	-	1 (1 %)
+Phaeonematoloma	2 (0 %)	1 (0 %)	1 (0 %)	-
+Phloeomana	2 (0 %)	3 (0 %)	-	3 (2 %)
+Pholiota	6 (0 %)	8 (1 %)	5 (1 %)	3 (2 %)
+Pholiotina	6 (0 %)	5 (1 %)	5 (1 %)	-
+Pistillina	-	1 (0 %)	-	1 (1 %)
+Plicatura	-	1 (0 %)	-	1 (1 %)
+Pluteus	15 (1 %)	14 (2 %)	3 (0 %)	11 (8 %)
+Porotheleum	-	1 (0 %)	-	1 (1 %)
+Protoglossum	1 (0 %)	-	-	-
+Protostropharia	-	1 (0 %)	1 (0 %)	-
+Psathyrella	32 (2 %)	27 (3 %)	24 (3 %)	3 (2 %)
+Pseudobaeospora	-	5 (1 %)	5 (1 %)	-
+Pseudoclitocybe	-	1 (0 %)	1 (0 %)	-
+Pseudolasiobolus	-	1 (0 %)	-	1 (1 %)
+Pseudotricholoma	1 (0 %)	1 (0 %)	1 (0 %)	-
+Psilocybe	1 (0 %)	4 (0 %)	4 (1 %)	-
+Pterula	-	2 (0 %)	2 (0 %)	-
+Radulomyces	1 (0 %)	1 (0 %)	-	1 (1 %)
+Ramariopsis	25 (2 %)	9 (1 %)	9 (1 %)	-
+Rectipilus	2 (0 %)	1 (0 %)	-	1 (1 %)
+Resinomycena	1 (0 %)	1 (0 %)	-	1 (1 %)
+Resupinatus	-	4 (0 %)	-	4 (3 %)
+Rhizomarasmius	-	1 (0 %)	1 (0 %)	-
+Rhodocollybia	1 (0 %)	2 (0 %)	2 (0 %)	-
+Rhodocybe	1 (0 %)	2 (0 %)	2 (0 %)	-
+Rhodophana	-	1 (0 %)	1 (0 %)	-
+Rimbachia	-	2 (0 %)	2 (0 %)	-
+Ripartites	3 (0 %)	1 (0 %)	1 (0 %)	-
+Roridomyces	1 (0 %)	1 (0 %)	1 (0 %)	-
+Rugosomyces	-	1 (0 %)	1 (0 %)	-
+Sagaranella	1 (0 %)	1 (0 %)	1 (0 %)	-
+Sarcomyxa	-	1 (0 %)	-	1 (1 %)
+Schizophyllum	1 (0 %)	1 (0 %)	-	1 (1 %)
+Seticyphella	-	2 (0 %)	-	2 (1 %)
+Simocybe	4 (0 %)	4 (0 %)	1 (0 %)	3 (2 %)
+Singerocybe	-	1 (0 %)	1 (0 %)	-
+Sphagnurus	1 (0 %)	1 (0 %)	1 (0 %)	-
+Squamanita	1 (0 %)	-	-	-
+Stephanospora	1 (0 %)	-	-	-
+Strobilurus	-	1 (0 %)	1 (0 %)	-
+Stropharia	4 (0 %)	4 (0 %)	4 (1 %)	-
+Tephrocybe	1 (0 %)	-	-	-
+Tricholoma	15 (1 %)	11 (1 %)	11 (2 %)	-
+Tricholomopsis	2 (0 %)	1 (0 %)	-	1 (1 %)
+Tubaria	4 (0 %)	4 (0 %)	4 (1 %)	-
+Tulostoma	1 (0 %)	-	-	-
+Tygervalleyomyces	2 (0 %)	-	-	-
+Typhrasa	-	1 (0 %)	1 (0 %)	-
+Typhula	15 (1 %)	9 (1 %)	6 (1 %)	3 (2 %)
+unidentified	282 (19 %)	-	-	-
+Volvopluteus	1 (0 %)	-	-	-
+Xeromphalina	1 (0 %)	-	-	-
+Xerula	-	1 (0 %)	1 (0 %)	-

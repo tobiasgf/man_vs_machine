@@ -1,0 +1,51 @@
+#	Cluster code	No. of seqs	No. of studies (total-BE-AQ)	Taxon name
+1.	UCL7_003532	64	30 - 0 - 0	Fungi; Rozellomycota
+2.	UCL8_006757	31	23 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+3.	UCL7_000941	26	19 - 0 - 1	Fungi; Ascomycota; Sordariomycetes
+4.	UCL7_005562	18	11 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+5.	UCL7_002869	21	8 - 0 - 1	Fungi; Ascomycota; Lecanoromycetes
+6.	UCL8_006612	20	8 - 0 - 0	Fungi; Ascomycota; Lecanoromycetes
+7.	UCL8_000145	8	7 - 0 - 0	Fungi; Rozellomycota
+8.	UCL8_013485	8	7 - 0 - 0	Fungi; Ascomycota; Lecanoromycetes
+9.	UCL8_002074	12	6 - 0 - 0	Fungi; Ascomycota; Dothideomycetes
+10.	UCL7_000924	6	6 - 0 - 1	Fungi; Ascomycota; Lecanoromycetes
+11.	UCL8_005987	5	5 - 0 - 0	Fungi; Rozellomycota
+12.	UCL7_000358	10	5 - 0 - 0	Fungi; Ascomycota; Dothideomycetes
+13.	UCL8_004827	24	5 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+14.	UCL8_005860	7	5 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+15.	UCL7_000925	6	5 - 0 - 0	Fungi; Ascomycota; Lecanoromycetes
+16.	UCL8_001452	10	5 - 0 - 0	Fungi; Rozellomycota
+17.	UCL7_005796	7	5 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+18.	UCL7_004136	7	5 - 0 - 0	Fungi
+19.	UCL7_006316	6	5 - 0 - 0	Fungi; Rozellomycota
+20.	UCL7_004812	6	5 - 0 - 0	Fungi; Rozellomycota
+21.	UCL7_000900	24	5 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+22.	UCL8_013221	8	5 - 0 - 0	Fungi; Ascomycota; Dothideomycetes
+23.	UCL8_013064	12	5 - 0 - 0	Fungi; Ascomycota
+24.	UCL7_003141	12	5 - 0 - 0	Fungi; Ascomycota; Arthoniomycetes
+25.	UCL7_000812	10	5 - 0 - 0	Fungi; Rozellomycota
+26.	UCL8_007631	4	4 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+27.	UCL7_002583	19	4 - 0 - 1	Fungi; Chytridiomycota
+28.	UCL7_000803	5	4 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+29.	UCL8_004822	5	4 - 0 - 0	Fungi; Rozellomycota
+30.	UCL7_005496	5	4 - 0 - 0	Fungi; Chytridiomycota; Chytridiomycetes
+31.	UCL8_002067	5	4 - 0 - 0	Fungi; Ascomycota; Lecanoromycetes
+32.	UCL8_001916	4	4 - 0 - 0	Fungi; Ascomycota
+33.	UCL8_007324	5	4 - 0 - 0	Fungi; Rozellomycota
+34.	UCL8_006380	4	4 - 1 - 0	Fungi; Basidiomycota; Agaricomycetes
+35.	UCL8_006634	6	4 - 0 - 0	Fungi
+36.	UCL8_000017	5	4 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+37.	UCL8_000309	4	4 - 0 - 0	Fungi; Ascomycota; Dothideomycetes
+38.	UCL7_010483	20	4 - 0 - 0	Fungi; Chytridiomycota; GS13
+39.	UCL7_004062	4	4 - 2 - 0	Fungi; Basidiomycota; Agaricomycetes
+40.	UCL7_004508	11	4 - 0 - 1	Fungi; Ascomycota; Dothideomycetes
+41.	UCL7_003559	4	4 - 0 - 0	Fungi; Ascomycota; Sordariomycetes
+42.	UCL8_006730	10	4 - 0 - 0	Fungi; Ascomycota; Dothideomycetes
+43.	UCL7_004723	8	4 - 1 - 0	Fungi; Ascomycota
+44.	UCL7_003500	5	4 - 0 - 0	Fungi; Ascomycota; Lecanoromycetes
+45.	UCL7_003506	4	4 - 0 - 2	Fungi
+46.	UCL7_004371	5	4 - 0 - 0	Fungi; Ascomycota; Archaeorhizomycetes
+47.	UCL7_003968	7	4 - 0 - 0	Fungi; Ascomycota; Dothideomycetes
+48.	UCL7_000792	5	4 - 0 - 0	Fungi; Basidiomycota; Microbotryomycetes
+49.	UCL7_003368	9	4 - 0 - 1	Fungi; Ascomycota
+50.	UCL7_002626	5	4 - 0 - 0	Fungi; Basidiomycota

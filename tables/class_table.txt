@@ -1,0 +1,61 @@
+Class	OTU	Fruitbody total	Soil frb.	Non-soil frb.
+Agaricomycetes	2741 (26 %)	1359 (78 %)	954 (89 %)	405 (59 %)
+Agaricostilbomycetes	26 (0 %)	-	-	-
+Archaeorhizomycetes	134 (1 %)	-	-	-
+Archaeosporomycetes	103 (1 %)	-	-	-
+Arthoniomycetes	1 (0 %)	-	-	-
+Atractiellomycetes	3 (0 %)	4 (0 %)	-	4 (1 %)
+Basidiobolomycetes	15 (0 %)	-	-	-
+Calcarisporiellomycetes	1 (0 %)	-	-	-
+Chytridiomycetes	10 (0 %)	-	-	-
+Classiculomycetes	2 (0 %)	-	-	-
+Cystobasidiomycetes	49 (0 %)	1 (0 %)	-	1 (0 %)
+Dacrymycetes	-	9 (1 %)	1 (0 %)	8 (1 %)
+Dothideomycetes	1040 (10 %)	18 (1 %)	1 (0 %)	17 (2 %)
+Endogonomycetes	49 (0 %)	1 (0 %)	1 (0 %)	-
+Entomophthoromycetes	3 (0 %)	-	-	-
+Entorrhizomycetes	10 (0 %)	-	-	-
+Eurotiomycetes	480 (5 %)	3 (0 %)	2 (0 %)	1 (0 %)
+Exobasidiomycetes	33 (0 %)	4 (0 %)	-	4 (1 %)
+Geminibasidiomycetes	2 (0 %)	-	-	-
+Geoglossomycetes	44 (0 %)	8 (0 %)	8 (1 %)	-
+Glomeromycetes	222 (2 %)	3 (0 %)	3 (0 %)	-
+GS14	7 (0 %)	-	-	-
+GS17	1 (0 %)	-	-	-
+GS18	6 (0 %)	-	-	-
+GS27	27 (0 %)	-	-	-
+GS35	1 (0 %)	-	-	-
+GS37	4 (0 %)	-	-	-
+Incertae_sedis	-	2 (0 %)	-	2 (0 %)
+Kickxellomycetes	15 (0 %)	-	-	-
+Laboulbeniomycetes	4 (0 %)	-	-	-
+Lecanoromycetes	132 (1 %)	2 (0 %)	-	2 (0 %)
+Leotiomycetes	1633 (16 %)	113 (6 %)	21 (2 %)	92 (13 %)
+Lobulomycetes	6 (0 %)	-	-	-
+Malasseziomycetes	4 (0 %)	-	-	-
+Microbotryomycetes	196 (2 %)	2 (0 %)	-	2 (0 %)
+Monoblepharidomycetes	20 (0 %)	-	-	-
+Mortierellomycetes	181 (2 %)	-	-	-
+Mucoromycetes	81 (1 %)	1 (0 %)	-	1 (0 %)
+Mucoromycotina__pp	1 (0 %)	-	-	-
+Myxogastrea	-	1 (0 %)	1 (0 %)	-
+Olpidiomycetes	27 (0 %)	-	-	-
+Orbiliomycetes	115 (1 %)	4 (0 %)	-	4 (1 %)
+Paraglomeromycetes	15 (0 %)	-	-	-
+Pezizomycetes	186 (2 %)	57 (3 %)	51 (5 %)	6 (1 %)
+Pezizomycotina__pp	4 (0 %)	-	-	-
+Pucciniomycetes	41 (0 %)	6 (0 %)	1 (0 %)	5 (1 %)
+Rhizophlyctidomycetes	13 (0 %)	-	-	-
+Rhizophydiomycetes	77 (1 %)	-	-	-
+Rozellomycotina__pp	41 (0 %)	-	-	-
+Saccharomycetes	53 (1 %)	-	-	-
+Sordariomycetes	862 (8 %)	138 (8 %)	22 (2 %)	116 (17 %)
+Spiculogloeomycetes	5 (0 %)	-	-	-
+Spizellomycetes	36 (0 %)	-	-	-
+Taphrinomycetes	10 (0 %)	2 (0 %)	-	2 (0 %)
+Tremellomycetes	251 (2 %)	13 (1 %)	1 (0 %)	12 (2 %)
+Umbelopsidomycetes	55 (1 %)	-	-	-
+unidentified	1375 (13 %)	-	-	-
+Ustilaginomycetes	11 (0 %)	-	-	-
+Wallemiomycetes	1 (0 %)	-	-	-
+Xylonomycetes	25 (0 %)	-	-	-
