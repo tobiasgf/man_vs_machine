@@ -13,13 +13,13 @@ library(readr)
 
 #### assign species to soil-fungi or non-soilfungi ####
 ```{r}
-obs_tab <- read_tsv(here::here("data","Biowide_fungi_obs_matrix3.txt"))
+obs_tab <- read_tsv(here::here("in_data","Biowide_fungi_obs_matrix3.txt"))
 
-g_act <- read.csv(here::here("data","genus_actions.txt"),sep="\t",stringsAsFactors = F)
+g_act <- read.csv(here::here("in_data","genus_actions.txt"),sep="\t",stringsAsFactors = F)
 names(g_act) <- c("genus","g_nonsoil")
 g_act <- g_act %>% filter(g_nonsoil == "x")
 
-sp_act <- read.csv(here::here("data","species_actions.txt"),sep="\t",stringsAsFactors = F)
+sp_act <- read.csv(here::here("in_data","species_actions.txt"),sep="\t",stringsAsFactors = F)
 names(sp_act) <- c("species","s_nonsoil")
 hjk <- str_split_fixed(sp_act$species, "_", 3)
 sp_act$species <- paste0(hjk[,1],"_",hjk[,2])
@@ -103,7 +103,7 @@ obs_tab <- readRDS(here::here("data","tax_adjusted_obs.RDS"))
 
 UNITE_genera <- read.csv(here::here("data","genus_classifications_UNITE2019.txt"),sep=";",stringsAsFactors = F)
 names(UNITE_genera) <- c("kingdom","phylum","class","order","family","genus")
-svampeatlas_genera <- read.csv(here::here("data","genussystematics_TGF.txt"),sep="\t",stringsAsFactors = F) # a few genera did not appear in UNITE and classification was fetched from svampeatlas.dk
+svampeatlas_genera <- read.csv(here::here("in_data","genussystematics_TGF.txt"),sep="\t",stringsAsFactors = F) # a few genera did not appear in UNITE and classification was fetched from svampeatlas.dk
 svampeatlas_genera <- svampeatlas_genera %>% filter(!genus %in% UNITE_genera$genus)
 
 classified <- rbind(UNITE_genera, svampeatlas_genera[,c(1,2,4,6,7,8)])

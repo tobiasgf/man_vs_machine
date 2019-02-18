@@ -39,7 +39,7 @@ saveRDS(lulified_tab,here::here("data","lulified_tab.RDS"))
 #### dereplicate ####
 ```{r}
 #collapse the three replicates for each sample
-samplelist <- read.csv(here::here("data","sample_info.txt"), sep="\t", header=TRUE, as.is = TRUE)
+samplelist <- read.csv(here::here("in_data","sample_info.txt"), sep="\t", header=TRUE, as.is = TRUE)
 derep_tab <- dereplicate(otutab, samplelist)
 
 saveRDS(derep_tab,here::here("data","derep_tab.RDS"))

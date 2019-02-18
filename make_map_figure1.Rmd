@@ -18,7 +18,7 @@ library(here)
 #downlod map data from https://ec.europa.eu/eurostat
 #https://ec.europa.eu/eurostat/cache/GISCO/distribution/v2/countries/download/ref-countries-2016-01m.shp.zip  
 
-world <- readOGR(dsn = here::here("data","CNTR_RG_01M_2016_4326.shp"))
+world <- readOGR(dsn = here::here("in_data","CNTR_RG_01M_2016_4326.shp"))
 
 # CUT TO DK AREA
 dk_basic <- crop(world, extent(8, 13, 54.5, 57.8))
@@ -33,7 +33,7 @@ new_theme_empty$plot.title <- element_blank()
 new_theme_empty$axis.title <- element_blank()
 new_theme_empty$plot.margin <- structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit")
 
-Biowidesites <- read_xlsx(here::here("data","DD130sites.xlsx"))
+Biowidesites <- read_xlsx(here::here("in_data","DD130sites.xlsx"))
 
 f1 <-  ggplot() + 
  geom_polygon(data=dk_basic, aes(x=long,y=lat,group=group,fill=id)) + 
