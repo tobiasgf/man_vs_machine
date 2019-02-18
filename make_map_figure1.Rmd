@@ -1,0 +1,48 @@
+---
+title: "Figure12_map"
+author: "Tobias G Frøslev"
+date: "18/2/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(rgdal)
+library(raster)
+library(readxl)
+library(here)
+
+#get map data
+#downlod map data from https://ec.europa.eu/eurostat
+#https://ec.europa.eu/eurostat/cache/GISCO/distribution/v2/countries/download/ref-countries-2016-01m.shp.zip  
+
+world <- readOGR(dsn = here::here("data","CNTR_RG_01M_2016_4326.shp"))
+
+# CUT TO DK AREA
+dk_basic <- crop(world, extent(8, 13, 54.5, 57.8))
+dk_basic = fortify(dk_basic)
+dk_basic$id[dk_basic$id != "49"] <- "0"  # making all other countries the same for mapping colour
+
+new_theme_empty <- theme_bw()
+new_theme_empty$line <- element_blank()
+new_theme_empty$strip.text <- element_blank()
+new_theme_empty$axis.text <- element_blank()
+new_theme_empty$plot.title <- element_blank()
+new_theme_empty$axis.title <- element_blank()
+new_theme_empty$plot.margin <- structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit")
+
+Biowidesites <- read_xlsx(here::here("data","DD130sites.xlsx"))
+
+f1 <-  ggplot() + 
+ geom_polygon(data=dk_basic, aes(x=long,y=lat,group=group,fill=id)) + 
+ scale_fill_manual(values=c("#E0E0E0","#F5F5F5")) +  # Sverige, Danmark "#C1D0CD","#A2B4AD"
+ geom_point(data=Biowidesites,aes(ddlong,ddlat), pch = 21, alpha = 1, size=3) + 
+ geom_path(data=dk_basic, aes(x=long,y=lat,group=group), colour='black', size = 0.5) + 
+ new_theme_empty + theme(panel.background=element_rect(fill = "white"), legend.position = "none") +
+ coord_fixed(ratio = 1.79)
+
+ggsave(here::here("plots","F1.pdf"), f1, width = 10, height = 10, device = "pdf")
+
+```
