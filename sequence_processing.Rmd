@@ -9,7 +9,9 @@ editor_options:
 # below steps are initial sequence related analyses done on a linux server
 
 #### get sequencing files ####
-the fastq files from the two MiSeq runs are deposited here:
+the fastq files from the two MiSeq runs are deposited here: https://sid.erda.dk/public/archives/b0d2b22cb7804ff23d1612f4afdc29ae/published-archive.html
+
+The two sequencing runs are separate runs of the same pcr products. Data from corresponding files should be merged prior to analyses.
 
 #### demultiplexing ####
 The 12 fastq files from the two MiSeq runs were demultiplexed with a custom demultiplexing script: DADA2_demultiplex.sh    
