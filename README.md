@@ -1,7 +1,7 @@
 # Man vs Machine - analyses  
 ___
 
-This repository (R project) contains all data and scripts necessary to run the analyses and produce the figures from the study  **Man against machine: Do fungal fruitbodies and eDNA metabarcoding give similar biodiversity assessments across broad environmental gradients?.**  (for publication in Biological Conservation).  
+This repository (R project) contains all data and scripts necessary to run the analyses and produce the figures from the study  **Man against machine: Do fungal fruitbodies and eDNA metabarcoding give similar biodiversity assessments across broad environmental gradients?.**  (Frøslev et al. (2019) - published in Biological Conservation).  
 All steps/processes for this study can be carried out on the same computer/platform. But, in practise all analyses were carried out on a linux server setup with 64 processors (AMD Opteron(tm) 6380), except R-scripts, which were run on a MacBook Pro (2.9 GHz Intel Core i7, 16 GB 2133 MHz LPDDR3).
 All analyses were carried out in one directory and sub-directories of this.
 
@@ -25,3 +25,6 @@ Various R-packages were used for this study (see in the relevant markdown files)
  * tables : output directory for (text) tables produced in the analyses  
  * R : contains a few functions used in the analyses  
  * plots : output directory for the plots/figures produced in the analyses
+ 
+#References  
+Frøslev, T. G., Kjøller, R., Bruun, H. H., Ejrnæs, R., Hansen, A. J., Læssøe, T., & Heilmann-Clausen, J. (2019). Man against machine: Do fungal fruitbodies and eDNA give similar biodiversity assessments across broad environmental gradients?. Biological Conservation, 233, 201-212. https://doi.org/10.1016/j.biocon.2019.02.038
