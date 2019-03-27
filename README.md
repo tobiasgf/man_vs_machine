@@ -26,5 +26,5 @@ Various R-packages were used for this study (see in the relevant markdown files)
  * R : contains a few functions used in the analyses  
  * plots : output directory for the plots/figures produced in the analyses
  
-#References  
+## References  
 Frøslev, T. G., Kjøller, R., Bruun, H. H., Ejrnæs, R., Hansen, A. J., Læssøe, T., & Heilmann-Clausen, J. (2019). Man against machine: Do fungal fruitbodies and eDNA give similar biodiversity assessments across broad environmental gradients?. Biological Conservation, 233, 201-212. https://doi.org/10.1016/j.biocon.2019.02.038
